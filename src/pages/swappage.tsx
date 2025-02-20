@@ -1,14 +1,13 @@
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import "../App.css"
-import LiquidityPoolTable from "../components/pool";
+import TokenSwap from "../libs/swap";
 
-export default function Actives() {
+export default function SwapPage() {
   return (
     <div className="mx-auto bg-gradient-to-b from-white to-green-500 p-4 rounded-b-2xl shadow-lg flex flex-col items-center h-full space-y-32">
       <Header />
-      <h2 className="text-2xl font-bold mb-4 text-green-600">BEST LIQUIDITY POOLS</h2>
-      <LiquidityPoolTable />
+      <TokenSwap />
       <Footer />
     </div>
   )

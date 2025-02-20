@@ -1,7 +1,7 @@
 const LiquidityPoolTable = () => {
     const pools = [
       {
-        name: 'sAMM-USDC/sUSD',
+        name: 'AMOs-AnaJu/sUSD',
         type: 'Basic Stable',
         fee: '0.05%',
         volume: '~$519,614.83',
@@ -49,7 +49,6 @@ const LiquidityPoolTable = () => {
   
     return (
       <div className="px-10 py-12 w-9/10 mx-auto">
-        <h2 className="text-xl font-bold mb-4 text-green-600">LIQUIDITY POOL</h2>
         <div className="space-y-6">
           {pools.map((pool, index) => (
             <div key={index} className="rounded-2xl border border-green-300 shadow-md p-6 bg-white">

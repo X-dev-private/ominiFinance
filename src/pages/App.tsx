@@ -6,6 +6,8 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
 
 import Actives from './activespage'
 import Home from './home'
+import LiquidityPage from './liquidyPage'
+import SwapPage from './swappage'
 
 import "../App.css"
 
@@ -37,8 +39,15 @@ const router = createBrowserRouter([
     element: <Home />
   },
   {
-    path: "/actives",
+    path: "/app",
     element: <Actives />
+  },
+  {
+    path: "/app/swap",
+    element: <SwapPage />
+  },{
+    path: "/app/liquidity",
+    element: <LiquidityPage />
   }
 ])
 

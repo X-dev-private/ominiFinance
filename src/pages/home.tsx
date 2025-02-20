@@ -15,7 +15,7 @@ export default function Home() {
         </section>
         <section>
           <a
-            href="/actives"
+            href="/app"
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm"
           >
             Launcher Testnet
@@ -34,7 +34,7 @@ export default function Home() {
           
           {/* Botão posicionado metade dentro e metade fora da imagem */}
           <a
-            href="/actives"
+            href="/app"
             className="absolute left-1/2 bottom-[-25px] transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition shadow-lg"
           >
             Launcher Testnet
