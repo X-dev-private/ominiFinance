@@ -1,7 +1,7 @@
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import "../App.css"
-import TokenSwap from "../libs/swap";
+import TokenSwap from "../libs/swapLib";
 
 export default function SwapPage() {
   return (

@@ -2,27 +2,27 @@ import Logo from '../assets/converted_image_1.png'
 
 export default function Header() {
     return (
-        <div className="flex flex-row items-center justify-between w-full h-16 bg-green-100 bg-opacity-50 p-6 rounded-2xl">
-            <div title="1" className="w-1/4 text-left">
-                <img src={Logo} alt="Logo" className="h-18 object-contain" />
+        <div className="flex flex-row items-center justify-between w-full h-16 bg-green-100 bg-opacity-50 px-4 py-6 rounded-2xl">
+            <div className="w-1/5 text-left">
+                <img src={Logo} alt="Logo" className="h-16 object-contain" />
             </div>
             
-            <div title="2" className="w-1/2 flex gap-6 items-center justify-center">
-                <a href="/app" className="px-8 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
+            <div className="w-3/5 flex gap-4 items-center justify-center">
+                <a href="/app" className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
                     dashbord
                 </a>
-                <a className="px-8 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
+                <a className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
                     portifolio
                 </a>
-                <a href="/app/swap" className="px-8 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
+                <a href="/app/swap" className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
                     swap
                 </a>
-                <a href="/app/liquidity" className="px-8 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
+                <a href="/app/liquidity" className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
                     liquidity
                 </a>
                 <div className="relative flex flex-col items-center group">
                     <a 
-                        className="px-8 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl cursor-not-allowed transition-all duration-300
+                        className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl cursor-not-allowed transition-all duration-300
                                    hover:bg-red-500 hover:border-red-500"
                     >
                         point & rewards
@@ -34,7 +34,7 @@ export default function Header() {
                 </div>
             </div>
 
-            <div title="3" className="w-1/4 flex justify-end">
+            <div title="3" className="w-1/5 flex justify-end">
                 <appkit-button />
             </div>
         </div>
