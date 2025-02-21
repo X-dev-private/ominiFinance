@@ -10,6 +10,7 @@ import LiquidityPage from './liquidyPage'
 import SwapPage from './swappage'
 
 import "../App.css"
+import PortifolioPage from './portifolioPage'
 
 const queryClient = new QueryClient()
 
@@ -48,7 +49,11 @@ const router = createBrowserRouter([
   },{
     path: "/app/liquidity",
     element: <LiquidityPage />
+  },{
+    path: "/app/portifolio",
+    element: <PortifolioPage />
   }
+
 ])
 
 export default function App() {

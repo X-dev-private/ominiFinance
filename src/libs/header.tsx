@@ -11,7 +11,7 @@ export default function Header() {
                 <a href="/app" className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
                     dashbord
                 </a>
-                <a className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
+                <a href='/app/portifolio' className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
                     portifolio
                 </a>
                 <a href="/app/swap" className="px-6 py-2 bg-green-500 border-2 border-green-500 text-white rounded-2xl hover:bg-white hover:text-green-500 transition-all duration-300">
