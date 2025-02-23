@@ -2,6 +2,8 @@ import { useAccount, useContractRead } from "wagmi";
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import "../App.css";
+import { useNetworkColor } from '../config/networkColorContext';
+import { ethers } from "ethers";
 
 // Endereços dos contratos dos tokens
 const ANJUX_TOKEN_ADDRESS = "0x6c3aaaA93CC59f5A4288465F073C2B94DDBD3a05";
@@ -15,6 +17,7 @@ const ERC20_ABI = [
 
 export default function PortifolioPage() {
   const { address } = useAccount();
+  const networkColor = useNetworkColor(); // Obtendo a cor da rede do contexto
 
   // Usando wagmi para ler os saldos dos tokens
   const { data: anjuxBalance, isLoading: anjuxLoading } = useContractRead({
@@ -46,8 +49,14 @@ export default function PortifolioPage() {
   const formattedEthofBalance = ethofBalance ? parseFloat(ethers.utils.formatUnits(ethofBalance, 18)).toFixed(3) : "0.000";
   const formattedUsdcofBalance = usdcofBalance ? parseFloat(ethers.utils.formatUnits(usdcofBalance, 18)).toFixed(3) : "0.000";
 
+  // Função para formatar o endereço da carteira
+  const formatAddress = (addr: string | undefined) => {
+    if (!addr) return '';
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
   return (
-    <div className="mx-auto bg-gradient-to-b from-white to-green-500 p-4 rounded-b-2xl shadow-lg flex flex-col items-center h-full space-y-32">
+    <div className={`mx-auto ${networkColor} p-4 rounded-b-2xl shadow-lg flex flex-col items-center h-full space-y-32`}>
       <Header />
       <div className="text-white text-xl">
         <h2>Saldos dos Tokens</h2>

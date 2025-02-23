@@ -1,18 +1,19 @@
-import { createAppKit } from '@reown/appkit/react'
-import { WagmiProvider } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { projectId, metadata, networks, wagmiAdapter } from '../config'
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
+import React from 'react';
+import { createAppKit } from '@reown/appkit/react';
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { projectId, metadata, networks, wagmiAdapter } from '../config';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { NetworkColorProvider } from '../config/networkColorContext';  // Importando o contexto
+import Actives from './activespage';
+import Home from './home';
+import LiquidityPage from './liquidyPage';
+import SwapPage from './swappage';
+import PortifolioPage from './portifolioPage';
 
-import Actives from './activespage'
-import Home from './home'
-import LiquidityPage from './liquidyPage'
-import SwapPage from './swappage'
+import "../App.css";
 
-import "../App.css"
-import PortifolioPage from './portifolioPage'
-
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 const generalConfig = {
   projectId,
@@ -21,49 +22,53 @@ const generalConfig = {
   themeMode: 'light' as const,
   themeVariables: {
     '--w3m-accent': '#000000',
-  }
-}
+  },
+};
 
-// Create modal
 createAppKit({
   adapters: [wagmiAdapter],
   ...generalConfig,
   features: {
-    analytics: true // Optional - defaults to your Cloud configuration
-  }
-})
+    analytics: true, // Optional - defaults to your Cloud configuration
+  },
+});
 
-// Definição das rotas
+// Definindo as rotas
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />
+    element: <Home />,
   },
   {
     path: "/app",
-    element: <Actives />
+    element: <Actives />,
   },
   {
     path: "/app/swap",
-    element: <SwapPage />
-  },{
+    element: <SwapPage />,
+  },
+  {
     path: "/app/liquidity",
-    element: <LiquidityPage />
-  },{
+    element: <LiquidityPage />,
+  },
+  {
     path: "/app/portifolio",
-    element: <PortifolioPage />
-  }
+    element: <PortifolioPage />,
+  },
+]);
 
-])
-
-export default function App() {
+const App: React.FC = () => {
   return (
     <div className="pages">
       <WagmiProvider config={wagmiAdapter.wagmiConfig}>
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <NetworkColorProvider>  {/* Envolvendo com o NetworkColorProvider */}
+            <RouterProvider router={router} />
+          </NetworkColorProvider>
         </QueryClientProvider>
       </WagmiProvider>
     </div>
-  )
-}
+  );
+};
+
+export default App;

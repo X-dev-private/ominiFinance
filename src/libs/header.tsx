@@ -2,7 +2,7 @@ import Logo from '../assets/converted_image_1.png'
 
 export default function Header() {
     return (
-        <div className="flex flex-row items-center justify-between w-full h-16 bg-green-100 bg-opacity-50 px-4 py-6 rounded-2xl">
+        <div className="flex flex-row items-center justify-between w-full h-16 bg-opacity-50 px-4 py-6 rounded-2xl">
             <div className="w-1/5 text-left">
                 <img src={Logo} alt="Logo" className="h-16 object-contain" />
             </div>
