@@ -7,28 +7,30 @@ import MintButtonA from "../components/mintButtonAnjuX";
 import { useNetworkColor } from '../config/networkColorContext';
 
 const Actives: React.FC = () => {
-  const networkColor = useNetworkColor();  // Obtendo a cor da rede do contexto
+  const networkColor = useNetworkColor(); // Obtendo a cor da rede do contexto
 
   return (
-    <div className={`mx-auto ${networkColor} p-6 rounded-b-2xl shadow-lg flex flex-col items-center h-full space-y-16`}>
+    <div className={`mx-auto ${networkColor} min-h-screen flex flex-col`}>
       <Header />
-      <div className="w-full max-w-3xl space-y-8 pt-16 pb-16 shadow-2xl rounded-3xl">
-        <h1 className="text-3xl font-bold text-white text-center">
-          Tokens de Faucet
-        </h1>
 
-        <div className="flex justify-center space-x-6 pt-16 pb-16">
-          <MintButtonU />
-          <MintButtonE />
-          <MintButtonA />
+      {/* Conteúdo centralizado e espaçado */}
+      <div className="flex flex-col items-center justify-center flex-grow w-full px-6 mt-20 mb-20 ">
+        <div className="w-full max-w-3xl bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-xl text-white text-center space-y-8">
+          <h1 className="text-4xl font-bold drop-shadow-md">Tokens de Faucet</h1>
+
+          <div className="flex flex-wrap justify-center gap-6">
+            <MintButtonU />
+            <MintButtonE />
+            <MintButtonA />
+          </div>
+
+          <p className="max-w-lg mx-auto border border-white/20 rounded-xl p-4 bg-black/30 text-lg leading-relaxed">
+            Tokens de faucet são ativos distribuídos gratuitamente em redes de teste para que desenvolvedores e usuários possam testar funcionalidades sem gastar tokens reais. 
+            Esses tokens não possuem valor real e servem apenas para experimentação em ambientes de desenvolvimento.
+          </p>
         </div>
-
-        <p className="text-center text-white max-w-lg mx-auto border-2 border-white rounded-xl p-4" 
-           style={{ backgroundColor: "rgba(0, 0, 0, 0.20)" }}>
-          Tokens de faucet são ativos distribuídos gratuitamente em redes de teste para que desenvolvedores e usuários possam testar funcionalidades sem gastar tokens reais. 
-          Esses tokens não possuem valor real e servem apenas para experimentação em ambientes de desenvolvimento.
-        </p>
       </div>
+
       <Footer />
     </div>
   );
