@@ -44,10 +44,6 @@ const router = createBrowserRouter([
     element: <Actives />,
   },
   {
-    path: "/app/swap",
-    element: <SwapPage />,
-  },
-  {
     path: "/app/liquidity",
     element: <LiquidityPage />,
   },
