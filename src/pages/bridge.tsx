@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import { evm } from "@debridge-finance/desdk";
+import Header from '../libs/header';
+import Footer from '../libs/footer';
 
 const DebridgeExample = () => {
   const [loading, setLoading] = useState(false);
@@ -8,8 +10,8 @@ const DebridgeExample = () => {
   const handleSend = async () => {
     setLoading(true);
     try {
-      const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/YOUR_PROJECT_ID');
-      const wallet = new ethers.Wallet('YOUR_PRIVATE_KEY', provider);
+      const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/'import.meta.env.VITE_INFURA_API_KEY);
+      const wallet = new ethers.Wallet(import.meta.env.VITE_PRIVATE_KEY, provider);
 
       const evmContext: evm.Context = {
         provider: provider,
@@ -41,6 +43,7 @@ const DebridgeExample = () => {
 
   return (
     <div>
+    <Header />
       <button
         onClick={handleSend}
         className="bg-green-500 text-white px-4 py-2 rounded-lg disabled:opacity-50"
@@ -48,6 +51,7 @@ const DebridgeExample = () => {
       >
         {loading ? 'Enviando...' : 'Enviar Mensagem'}
       </button>
+      <Footer />
     </div>
   );
 };

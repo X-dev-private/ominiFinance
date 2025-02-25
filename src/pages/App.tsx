@@ -12,6 +12,7 @@ import SwapPage from './swappage';
 import PortifolioPage from './portifolioPage';
 
 import "../App.css";
+import DebridgeExample from './bridge';
 
 const queryClient = new QueryClient();
 
@@ -46,7 +47,10 @@ const router = createBrowserRouter([
   {
     path: "/app/liquidity",
     element: <LiquidityPage />,
-  },
+  },/*{
+    path: "/app/bridge",
+    element: <DebridgeExample />,
+  },*/
   {
     path: "/app/portifolio",
     element: <PortifolioPage />,

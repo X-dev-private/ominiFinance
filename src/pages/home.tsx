@@ -10,7 +10,14 @@ export default function Home() {
       >
         <section className="flex space-x-6">
           <a href="#" className="text-base font-semibold hover:text-green-700">Home</a>
-          <a href="#" className="text-base font-semibold hover:text-green-700">Documentation</a>
+          <a
+            href="https://omini-finance-docs.vercel.app/"
+            className="text-base font-semibold hover:text-green-700"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+          </a>
           <a href="#" className="text-base font-semibold hover:text-green-700">Career</a>
         </section>
         <section>
@@ -59,8 +66,15 @@ export default function Home() {
           <p>Powered by ZeroElevenTeam</p>
         </div>
         <div className="flex space-x-6">
-          <a href="#" className="text-base font-semibold hover:text-green-700">Home</a>
-          <a href="#" className="text-base font-semibold hover:text-green-700">Documentation</a>
+          <a href="/" className="text-base font-semibold hover:text-green-700">Home</a>
+          <a
+            href="https://omini-finance-docs.vercel.app/"
+            className="text-base font-semibold hover:text-green-700"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+          </a>
           <a href="#" className="text-base font-semibold hover:text-green-700">Career</a>
         </div>
       </section>
