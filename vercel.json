@@ -1,16 +1,6 @@
 {
   "rewrites": [
-    {
-      "source": "/app/(.*)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/app/liquidity",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/app/portifolio",
-      "destination": "/index.html"
-    }
+    { "source": "/app", "destination": "/index.html" },
+    { "source": "/app/:path*", "destination": "/index.html" }
   ]
 }
