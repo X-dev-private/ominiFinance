@@ -62,7 +62,7 @@ const App: React.FC = () => {
     <div className="pages">
       <WagmiProvider config={wagmiAdapter.wagmiConfig}>
         <QueryClientProvider client={queryClient}>
-          <NetworkColorProvider>  {/* Envolvendo com o NetworkColorProvider */}
+          <NetworkColorProvider> 
             <RouterProvider router={router} />
           </NetworkColorProvider>
         </QueryClientProvider>
