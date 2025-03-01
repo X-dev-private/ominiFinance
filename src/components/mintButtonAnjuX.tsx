@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ethers } from "ethers";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 
 const contractAddress = "0x6c3aaaA93CC59f5A4288465F073C2B94DDBD3a05";
 
@@ -16,15 +16,18 @@ const contractABI = [
 
 const MintButtonA: React.FC = () => {
   const { address, isConnected } = useAccount();
+  const chainId = useChainId();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [showCooldownMessage, setShowCooldownMessage] = useState(false);
   const [opacity, setOpacity] = useState(0);
 
+  const isCorrectChain = chainId === 57054 || chainId === 11155111;
+
   const mintToken = async () => {
-    if (!isConnected) {
-      setError("Conecte sua carteira primeiro");
+    if (!isConnected || !isCorrectChain) {
+      setError("Conecte sua carteira e esteja na chain correta");
       return;
     }
 
@@ -62,13 +65,14 @@ const MintButtonA: React.FC = () => {
     <div className="flex flex-col items-center gap-4 relative">
       <button
         onClick={mintToken}
-        disabled={!isConnected || loading}
-        className="px-6 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600 disabled:bg-gray-400"
+        disabled={!isConnected || loading || !isCorrectChain}
+        className="px-6 py-2 text-white bg-green-500 rounded-lg transition-colors duration-300 hover:bg-green-600 disabled:opacity-50 disabled:hover:bg-red-400"
       >
         {loading ? "Mintando..." : "Mint AnJuX Token"}
       </button>
 
       {!isConnected && <p className="text-red-500">Conecte sua carteira</p>}
+      {!isCorrectChain && <p className="text-red-500">Troque para a chain correta</p>}
       {success && <p className="text-green-500">Token mintado com sucesso!</p>}
       {error && <p className="text-red-500">Erro: {error}</p>}
 

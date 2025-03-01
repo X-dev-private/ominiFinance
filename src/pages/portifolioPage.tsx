@@ -1,15 +1,10 @@
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi"; // Adicionei useChainId aqui
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import "../App.css";
 import { useNetworkColor } from '../config/networkColorContext';
 import { useEffect, useState } from "react";
-import { Network, Alchemy } from "alchemy-sdk";
-
-const alchemy = new Alchemy({
-  apiKey: import.meta.env.VITE_ALCHEMY_API_KEY,
-  network: Network.ETH_SEPOLIA,
-});
+import { BrowserProvider, Contract, formatUnits } from "ethers";
 
 const TOKEN_ADDRESSES = {
   anjux: "0x6c3aaaA93CC59f5A4288465F073C2B94DDBD3a05",
@@ -17,8 +12,13 @@ const TOKEN_ADDRESSES = {
   usdcof: "0x32c00bD194B3ea78B9799394984DF8dB7397B834",
 };
 
+const ERC20_ABI = [
+  "function balanceOf(address account) external view returns (uint256)"
+];
+
 export default function PortifolioPage() {
   const { address } = useAccount();
+  const chainId = useChainId(); // Hook para obter o chainId atual
   const networkColor = useNetworkColor();
   const [balances, setBalances] = useState({
     anjux: "0.000",
@@ -28,38 +28,65 @@ export default function PortifolioPage() {
   });
 
   useEffect(() => {
-    if (!address) return;
+    if (!address) {
+      console.log("Nenhum endereço conectado.");
+      return;
+    }
+
+    if (!window.ethereum) {
+      console.error("Carteira não detectada!");
+      return;
+    }
 
     const fetchBalances = async () => {
       try {
-        const response = await alchemy.core.getTokenBalances(address, [
-          TOKEN_ADDRESSES.anjux,
-          TOKEN_ADDRESSES.ethof,
-          TOKEN_ADDRESSES.usdcof,
+        const provider = new BrowserProvider(window.ethereum);
+        
+        // Verificação adicional com chainId
+        const currentChainId = await provider.getNetwork().then(network => network.chainId);
+        if (currentChainId !== chainId) {
+          console.log("Mudança de rede detectada, atualizando...");
+        }
+
+        const anjuxContract = new Contract(TOKEN_ADDRESSES.anjux, ERC20_ABI, provider);
+        const ethofContract = new Contract(TOKEN_ADDRESSES.ethof, ERC20_ABI, provider);
+        const usdcofContract = new Contract(TOKEN_ADDRESSES.usdcof, ERC20_ABI, provider);
+
+        const [anjuxBalance, ethofBalance, usdcofBalance] = await Promise.all([
+          anjuxContract.balanceOf(address),
+          ethofContract.balanceOf(address),
+          usdcofContract.balanceOf(address)
         ]);
 
         const formattedBalances = {
-          anjux: (response.tokenBalances[0].tokenBalance / 10 ** 18).toFixed(3),
-          ethof: (response.tokenBalances[1].tokenBalance / 10 ** 18).toFixed(3),
-          usdcof: (response.tokenBalances[2].tokenBalance / 10 ** 18).toFixed(3),
+          anjux: Number(formatUnits(anjuxBalance, 18)).toFixed(3),
+          ethof: Number(formatUnits(ethofBalance, 18)).toFixed(3),
+          usdcof: Number(formatUnits(usdcofBalance, 18)).toFixed(3),
           loading: false,
         };
 
         setBalances(formattedBalances);
       } catch (error) {
         console.error("Erro ao buscar saldos:", error);
-        setBalances((prev) => ({ ...prev, loading: false }));
+        setBalances(prev => ({ ...prev, loading: false }));
       }
     };
 
     fetchBalances();
-  }, [address]);
+
+    // Listener para atualizar quando a rede mudar
+    const handleChainChanged = () => {
+      fetchBalances();
+    };
+
+    window.ethereum.on('chainChanged', handleChainChanged);
+    return () => window.ethereum.removeListener('chainChanged', handleChainChanged);
+  }, [address, chainId]); // Adicionei chainId nas dependências
 
   return (
     <div className={`mx-auto ${networkColor} min-h-screen flex flex-col`}>
       <Header />
       
-      {/* Conteúdo principal centralizado */}
       <div className="flex flex-col items-center justify-center flex-grow space-y-8">
         <h2 className="text-3xl font-bold text-white drop-shadow-md">
           🏦 Saldos dos Tokens
