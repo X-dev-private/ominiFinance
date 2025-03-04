@@ -1,4 +1,4 @@
-import { useAccount, useChainId } from "wagmi"; // Adicionei useChainId aqui
+import { useAccount, useChainId } from "wagmi";
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import "../App.css";
@@ -7,9 +7,16 @@ import { useEffect, useState } from "react";
 import { BrowserProvider, Contract, formatUnits } from "ethers";
 
 const TOKEN_ADDRESSES = {
-  anjux: "0x6c3aaaA93CC59f5A4288465F073C2B94DDBD3a05",
-  ethof: "0x1429c6F2Be05EFF1fB07F52D9D4880a108153dD4",
-  usdcof: "0x32c00bD194B3ea78B9799394984DF8dB7397B834",
+  11155111: {
+    anjux: "0x6c3aaaA93CC59f5A4288465F073C2B94DDBD3a05",
+    ethof: "0x1429c6F2Be05EFF1fB07F52D9D4880a108153dD4",
+    usdcof: "0x32c00bD194B3ea78B9799394984DF8dB7397B834",
+  },
+  57054: {
+    anjux: "0x0c5aAE3d2166F20995f63F48b897E425a804CaDD",
+    ethof: "0x15F3DF98AC835D5661F791D8877C2cD7f6A4B876",
+    usdcof: "0x911aE2B3C1D6Fe71C6B19938922faa8AbDdc035c"
+  }
 };
 
 const ERC20_ABI = [
@@ -18,7 +25,7 @@ const ERC20_ABI = [
 
 export default function PortifolioPage() {
   const { address } = useAccount();
-  const chainId = useChainId(); // Hook para obter o chainId atual
+  const chainId = useChainId();
   const networkColor = useNetworkColor();
   const [balances, setBalances] = useState({
     anjux: "0.000",
@@ -28,8 +35,9 @@ export default function PortifolioPage() {
   });
 
   useEffect(() => {
-    if (!address) {
-      console.log("Nenhum endereço conectado.");
+    if (!address || !chainId) {
+      console.log("Nenhum endereço conectado ou rede não detectada.");
+      setBalances(prev => ({ ...prev, loading: false }));
       return;
     }
 
@@ -41,31 +49,40 @@ export default function PortifolioPage() {
     const fetchBalances = async () => {
       try {
         const provider = new BrowserProvider(window.ethereum);
+        const currentChainId = (await provider.getNetwork()).chainId.toString();
         
-        // Verificação adicional com chainId
-        const currentChainId = await provider.getNetwork().then(network => network.chainId);
-        if (currentChainId !== chainId) {
-          console.log("Mudança de rede detectada, atualizando...");
+        // Verifica se a rede é suportada
+        if (!TOKEN_ADDRESSES[currentChainId]) {
+          console.error("Rede não suportada");
+          setBalances({
+            anjux: "N/D",
+            ethof: "N/D",
+            usdcof: "N/D",
+            loading: false
+          });
+          return;
         }
 
-        const anjuxContract = new Contract(TOKEN_ADDRESSES.anjux, ERC20_ABI, provider);
-        const ethofContract = new Contract(TOKEN_ADDRESSES.ethof, ERC20_ABI, provider);
-        const usdcofContract = new Contract(TOKEN_ADDRESSES.usdcof, ERC20_ABI, provider);
+        const tokens = TOKEN_ADDRESSES[currentChainId];
+        
+        const contracts = {
+          anjux: new Contract(tokens.anjux, ERC20_ABI, provider),
+          ethof: new Contract(tokens.ethof, ERC20_ABI, provider),
+          usdcof: new Contract(tokens.usdcof, ERC20_ABI, provider)
+        };
 
         const [anjuxBalance, ethofBalance, usdcofBalance] = await Promise.all([
-          anjuxContract.balanceOf(address),
-          ethofContract.balanceOf(address),
-          usdcofContract.balanceOf(address)
+          contracts.anjux.balanceOf(address),
+          contracts.ethof.balanceOf(address),
+          contracts.usdcof.balanceOf(address)
         ]);
 
-        const formattedBalances = {
+        setBalances({
           anjux: Number(formatUnits(anjuxBalance, 18)).toFixed(3),
           ethof: Number(formatUnits(ethofBalance, 18)).toFixed(3),
           usdcof: Number(formatUnits(usdcofBalance, 18)).toFixed(3),
           loading: false,
-        };
-
-        setBalances(formattedBalances);
+        });
       } catch (error) {
         console.error("Erro ao buscar saldos:", error);
         setBalances(prev => ({ ...prev, loading: false }));
@@ -74,14 +91,13 @@ export default function PortifolioPage() {
 
     fetchBalances();
 
-    // Listener para atualizar quando a rede mudar
     const handleChainChanged = () => {
       fetchBalances();
     };
 
     window.ethereum.on('chainChanged', handleChainChanged);
     return () => window.ethereum.removeListener('chainChanged', handleChainChanged);
-  }, [address, chainId]); // Adicionei chainId nas dependências
+  }, [address, chainId]);
 
   return (
     <div className={`mx-auto ${networkColor} min-h-screen flex flex-col`}>
@@ -96,19 +112,19 @@ export default function PortifolioPage() {
           <p className="text-lg flex justify-between border-b border-white/20 pb-2">
             <span>AnJuX Token:</span>
             <span className="font-semibold">
-              {balances.loading ? "Carregando..." : `${balances.anjux} tokens`}
+              {balances.loading ? "Carregando..." : `${balances.anjux} ${balances.anjux === "N/D" ? "" : "tokens"}`}
             </span>
           </p>
           <p className="text-lg flex justify-between border-b border-white/20 py-2">
             <span>ETHoF Token:</span>
             <span className="font-semibold">
-              {balances.loading ? "Carregando..." : `${balances.ethof} tokens`}
+              {balances.loading ? "Carregando..." : `${balances.ethof} ${balances.ethof === "N/D" ? "" : "tokens"}`}
             </span>
           </p>
           <p className="text-lg flex justify-between pt-2">
             <span>USDCoF Token:</span>
             <span className="font-semibold">
-              {balances.loading ? "Carregando..." : `${balances.usdcof} tokens`}
+              {balances.loading ? "Carregando..." : `${balances.usdcof} ${balances.usdcof === "N/D" ? "" : "tokens"}`}
             </span>
           </p>
         </div>
