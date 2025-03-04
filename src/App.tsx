@@ -11,7 +11,6 @@ import Home from './pages/home';
 import LiquidityPage from './pages/liquidyPage';
 import SwapPage from './pages/swappage';
 import PortifolioPage from './pages/portifolioPage';
-
 import "./App.css";
 import DebridgeExample from './pages/bridge';
 
@@ -48,10 +47,10 @@ const router = createBrowserRouter([
   {
     path: "/app/liquidity",
     element: <LiquidityPage />,
-  },/*{
-    path: "/app/bridge",
-    element: <DebridgeExample />,
-  },*/
+  },{
+    path: "/app/swap",
+    element: <SwapPage />,
+  },
   {
     path: "/app/portifolio",
     element: <PortifolioPage />,
