@@ -3,15 +3,17 @@ import { useChainId } from "wagmi";
 import { TOKEN_ADDRESSES, getTokenAndPoolAddresses, TokenType } from "../config/tokenAddresses";
 import { ethers } from "ethers";
 
-interface ApproveComponentProps {
+interface ApproveTwoTokensComponentProps {
   amount: string;
   fromToken: string;
   toToken: string;
 }
 
-const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, toToken }) => {
+const ApproveTwoTokensComponent: React.FC<ApproveTwoTokensComponentProps> = ({ amount, fromToken, toToken }) => {
   const chainId = useChainId();
   const [loading, setLoading] = useState(false);
+  const [fromTokenApproved, setFromTokenApproved] = useState(false);
+  const [toTokenApproved, setToTokenApproved] = useState(false);
 
   // Obtém os dados da chain
   const chainData = TOKEN_ADDRESSES[chainId as keyof typeof TOKEN_ADDRESSES];
@@ -36,20 +38,20 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
   console.log("To Token:", toToken, "Address:", toAddress);
   console.log("Liquidity Pool Address:", poolAddress);
 
-  const handleApprove = async () => {
+  const handleApprove = async (tokenAddress: string, tokenSymbol: string) => {
     if (!window.ethereum) {
       alert("MetaMask não detectado!");
-      return;
+      return false;
     }
 
-    if (!fromAddress) {
-      alert("Endereço do token de origem não encontrado! Verifique o símbolo do token.");
-      return;
+    if (!tokenAddress) {
+      alert(`Endereço do token ${tokenSymbol} não encontrado! Verifique o símbolo do token.`);
+      return false;
     }
 
     if (!poolAddress) {
       alert("Endereço da Liquidity Pool não encontrado!");
-      return;
+      return false;
     }
 
     try {
@@ -61,7 +63,7 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
       const erc20Abi = [
         "function approve(address spender, uint256 amount) public returns (bool)",
       ];
-      const contract = new ethers.Contract(fromAddress, erc20Abi, signer);
+      const contract = new ethers.Contract(tokenAddress, erc20Abi, signer);
 
       // Converte o amount para Wei (18 casas decimais, ajuste se necessário)
       const amountInWei = ethers.parseUnits(amount, 18);
@@ -70,12 +72,38 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
       const tx = await contract.approve(poolAddress, amountInWei);
       await tx.wait();
 
-      alert("Aprovação realizada com sucesso!");
+      alert(`Aprovação do token ${tokenSymbol} realizada com sucesso!`);
+      return true;
     } catch (error) {
-      console.error("Erro ao aprovar:", error);
-      alert("Erro ao aprovar tokens!");
+      console.error(`Erro ao aprovar ${tokenSymbol}:`, error);
+      alert(`Erro ao aprovar tokens ${tokenSymbol}!`);
+      return false;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleApproveFromToken = async () => {
+    if (!fromAddress) {
+      alert("Endereço do token de origem não encontrado!");
+      return;
+    }
+
+    const success = await handleApprove(fromAddress, fromToken);
+    if (success) {
+      setFromTokenApproved(true);
+    }
+  };
+
+  const handleApproveToToken = async () => {
+    if (!toAddress) {
+      alert("Endereço do token de destino não encontrado!");
+      return;
+    }
+
+    const success = await handleApprove(toAddress, toToken);
+    if (success) {
+      setToTokenApproved(true);
     }
   };
 
@@ -101,7 +129,7 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-800">Approve Token</h3>
+              <h3 className="text-lg font-semibold text-gray-800">Approve Tokens</h3>
               <p className="text-sm text-gray-600 mt-1">
                 Allow the Liquidity Pool to access your tokens
               </p>
@@ -109,13 +137,28 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
                 <span className="text-gray-500">Amount: {amount}</span>
                 <span className="text-gray-500">From Token: {fromToken || "N/A"}</span>
                 <span className="text-gray-500">To Token: {toToken || "N/A"}</span>
-                <button
-                  onClick={handleApprove}
-                  disabled={loading}
-                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  {loading ? "Approving..." : "Approve"}
-                </button>
+
+                {/* Botão para aprovar o fromToken */}
+                <div className="mt-2">
+                  <button
+                    onClick={handleApproveFromToken}
+                    disabled={loading || fromTokenApproved}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity w-full"
+                  >
+                    {loading ? "Approving..." : fromTokenApproved ? "From Token Approved ✅" : "Approve From Token"}
+                  </button>
+                </div>
+
+                {/* Botão para aprovar o toToken (só é habilitado após a aprovação do fromToken) */}
+                <div>
+                  <button
+                    onClick={handleApproveToToken}
+                    disabled={loading || !fromTokenApproved || toTokenApproved}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity w-full"
+                  >
+                    {loading ? "Approving..." : toTokenApproved ? "To Token Approved ✅" : "Approve To Token"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -125,4 +168,4 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
   );
 };
 
-export default ApproveComponent;
+export default ApproveTwoTokensComponent;

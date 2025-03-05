@@ -4,7 +4,7 @@ import Header from "../libs/header";
 import "../App.css";
 import TokenSwap from "../libs/swapLib";
 import { useNetworkColor } from '../config/networkColorContext';
-import AproveComponent from "../components/aproveComponent";
+import ApproveComponent from "../components/aproveComponent";
 
 export default function SwapPage() {
   const networkColor = useNetworkColor();
@@ -12,23 +12,25 @@ export default function SwapPage() {
   // Estado para armazenar o valor selecionado (amount)
   const [amount, setAmount] = useState<string>("0");
 
-  // Estado para armazenar o símbolo do token selecionado no campo "From"
-  const [tokenSymbol, setTokenSymbol] = useState<string>("ANJUX");
+  // Estado para armazenar os tokens selecionados
+  const [fromToken, setFromToken] = useState<string>("ANJUX");
+  const [toToken, setToToken] = useState<string>("ETHOF"); // Defina um token padrão ou deixe dinâmico
 
   return (
     <div className={`mx-auto ${networkColor} p-4 rounded-b-2xl shadow-lg flex flex-col items-center h-full space-y-32`}>
       <Header />
       
       <div className="flex flex-row gap-8 w-full max-w-6xl">
-        {/* Passa o estado e a função de atualização para o TokenSwap */}
+        {/* Passa os estados e funções de atualização para o TokenSwap */}
         <TokenSwap 
           amount={amount} 
           setAmount={setAmount} 
-          setTokenSymbol={setTokenSymbol} // Passa a função para atualizar o tokenSymbol
+          setFromToken={setFromToken} 
+          setToToken={setToToken} 
         />
 
-        {/* Passa o valor selecionado e o tokenSymbol para o AproveComponent */}
-        <AproveComponent amount={amount} tokenSymbol={tokenSymbol} />
+        {/* Passa o valor e os tokens para o ApproveComponent */}
+        <ApproveComponent amount={amount} fromToken={fromToken} toToken={toToken} />
       </div>
 
       <Footer />

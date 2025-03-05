@@ -5,15 +5,15 @@ import { useAccount, useChainId } from 'wagmi';
 interface TokenSwapProps {
   amount: string;
   setAmount: (amount: string) => void;
-  setTokenSymbol: (tokenSymbol: string) => void; // Atualiza o token selecionado
+  setFromToken: (tokenSymbol: string) => void;
+  setToToken: (tokenSymbol: string) => void;
 }
 
-const TokenSwap: React.FC<TokenSwapProps> = ({ amount, setAmount, setTokenSymbol }) => {
+const TokenSwap: React.FC<TokenSwapProps> = ({ amount, setAmount, setFromToken, setToToken }) => {
   const { address } = useAccount();
   const chainId = useChainId();
   const { anjux, ethof, usdcof, loading } = useTokenBalances(address, chainId);
 
-  // Atualiza os tokens disponíveis conforme o saldo é atualizado
   const [tokens, setTokens] = useState([
     { symbol: 'ANJUX', balance: anjux },
     { symbol: 'ETHOF', balance: ethof },
@@ -21,7 +21,6 @@ const TokenSwap: React.FC<TokenSwapProps> = ({ amount, setAmount, setTokenSymbol
   ]);
 
   useEffect(() => {
-    // Atualiza os tokens sempre que os saldos forem atualizados
     setTokens([
       { symbol: 'ANJUX', balance: anjux },
       { symbol: 'ETHOF', balance: ethof },
@@ -29,22 +28,30 @@ const TokenSwap: React.FC<TokenSwapProps> = ({ amount, setAmount, setTokenSymbol
     ]);
   }, [anjux, ethof, usdcof]);
 
-  // Estados para tokens selecionados
-  const [fromToken, setFromToken] = useState(tokens[0]);
-  const [toToken, setToToken] = useState(tokens[1]);
+  // Inicializa os tokens padrão
+  const [fromToken, setLocalFromToken] = useState(tokens[0]);
+  const [toToken, setLocalToToken] = useState(tokens[1]);
 
   useEffect(() => {
-    // Atualiza o token padrão quando os tokens são carregados
-    setFromToken(tokens[0]);
-    setToToken(tokens[1]);
-    setTokenSymbol(tokens[0].symbol);
+    setLocalFromToken(tokens[0]);
+    setLocalToToken(tokens[1]);
+    setFromToken(tokens[0].symbol);
+    setToToken(tokens[1].symbol);
   }, [tokens]);
 
   const handleFromTokenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedToken = tokens.find(token => token.symbol === e.target.value);
     if (selectedToken) {
-      setFromToken(selectedToken);
-      setTokenSymbol(selectedToken.symbol);
+      setLocalFromToken(selectedToken);
+      setFromToken(selectedToken.symbol);
+    }
+  };
+
+  const handleToTokenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedToken = tokens.find(token => token.symbol === e.target.value);
+    if (selectedToken) {
+      setLocalToToken(selectedToken);
+      setToToken(selectedToken.symbol);
     }
   };
 
@@ -83,10 +90,7 @@ const TokenSwap: React.FC<TokenSwapProps> = ({ amount, setAmount, setTokenSymbol
           <div className="flex items-center justify-between border border-green-600 rounded-2xl p-2 bg-white">
             <select
               className="bg-white text-green-800 font-semibold px-2 py-1 rounded-2xl border border-green-600 focus:outline-none"
-              onChange={(e) => {
-                const selectedToken = tokens.find(token => token.symbol === e.target.value);
-                if (selectedToken) setToToken(selectedToken);
-              }}
+              onChange={handleToTokenChange}
               value={toToken.symbol}
             >
               {tokens.map((token, index) => (
