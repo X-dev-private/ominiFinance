@@ -1,97 +1,111 @@
 import React, { useState, useEffect } from 'react';
-import { useAccount, useChainId, useSigner } from "wagmi";
-import { useTokenBalances, TokenType } from '../utils/useTokenBalances';
-import { executeSwap } from '../utils/swap';
+import { useTokenBalances } from '../utils/useTokenBalances';
+import { useAccount, useChainId } from 'wagmi';
 
-const TokenSwap: React.FC = () => {
+interface TokenSwapProps {
+  amount: string;
+  setAmount: (amount: string) => void;
+  setTokenSymbol: (tokenSymbol: string) => void; // Atualiza o token selecionado
+}
+
+const TokenSwap: React.FC<TokenSwapProps> = ({ amount, setAmount, setTokenSymbol }) => {
   const { address } = useAccount();
-  const { data: signer } = useSigner();
   const chainId = useChainId();
-  const balances = useTokenBalances(address, chainId);
-  
-  const [activeStep, setActiveStep] = useState(0);
-  const [amount, setAmount] = useState("");
-  const [fromToken, setFromToken] = useState<TokenType>("anjux");
-  const [toToken, setToToken] = useState<TokenType>("usdcof");
-  const [txHash, setTxHash] = useState("");
+  const { anjux, ethof, usdcof, loading } = useTokenBalances(address, chainId);
 
-  const [steps, setSteps] = useState([
-    { title: `Aprovar ${fromToken.toUpperCase()}`, completed: false },
-    { title: 'Confirmar Swap', completed: false }
+  // Atualiza os tokens disponíveis conforme o saldo é atualizado
+  const [tokens, setTokens] = useState([
+    { symbol: 'ANJUX', balance: anjux },
+    { symbol: 'ETHOF', balance: ethof },
+    { symbol: 'USDCOF', balance: usdcof },
   ]);
 
   useEffect(() => {
-    setSteps([
-      { title: `Aprovar ${fromToken.toUpperCase()}`, completed: false },
-      { title: 'Confirmar Swap', completed: false }
+    // Atualiza os tokens sempre que os saldos forem atualizados
+    setTokens([
+      { symbol: 'ANJUX', balance: anjux },
+      { symbol: 'ETHOF', balance: ethof },
+      { symbol: 'USDCOF', balance: usdcof },
     ]);
-    setActiveStep(0);
-  }, [fromToken, toToken]);
+  }, [anjux, ethof, usdcof]);
 
-  const getTokenBalance = (token: TokenType) => {
-    if (balances.loading) return "Carregando...";
-    if (balances[token] === "N/D") return "Não disponível";
-    return `${balances[token]} ${token.toUpperCase()}`;
-  };
+  // Estados para tokens selecionados
+  const [fromToken, setFromToken] = useState(tokens[0]);
+  const [toToken, setToToken] = useState(tokens[1]);
 
-  const handleAuthorization = async () => {
-    if (!signer || !chainId) return;
+  useEffect(() => {
+    // Atualiza o token padrão quando os tokens são carregados
+    setFromToken(tokens[0]);
+    setToToken(tokens[1]);
+    setTokenSymbol(tokens[0].symbol);
+  }, [tokens]);
 
-    try {
-      if (activeStep === 0) {
-        // Executar aprovação
-        await executeSwap(
-          fromToken,
-          toToken,
-          amount,
-          signer,
-          chainId
-        );
-        setSteps(prev => prev.map((step, i) => 
-          i === 0 ? {...step, completed: true} : step
-        ));
-      } else {
-        // Executar swap
-        const tx = await executeSwap(
-          fromToken,
-          toToken,
-          amount,
-          signer,
-          chainId
-        );
-        setTxHash(tx.hash);
-      }
-      setActiveStep(prev => prev + 1);
-    } catch (error) {
-      console.error("Erro na transação:", error);
+  const handleFromTokenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedToken = tokens.find(token => token.symbol === e.target.value);
+    if (selectedToken) {
+      setFromToken(selectedToken);
+      setTokenSymbol(selectedToken.symbol);
     }
   };
 
   return (
-    <div className="flex flex-col md:flex-row justify-center items-center p-8 rounded-lg shadow-lg gap-8 max-w-6xl mx-auto">
-      {/* Seção Esquerda - Seleção de Tokens */}
-      <section className="w-full md:w-1/2 p-8 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
-        {/* ... (mantido igual) ... */}
-      </section>
-
-      {/* Seção Direita - Passo a Passo de Aprovações */}
-      <section className="w-full md:w-1/2 p-8 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
-        {/* ... (mantido igual) ... */}
-        {txHash && (
-          <div className="mt-6 p-4 bg-green-500/10 rounded-lg border border-green-500/30">
-            <p className="text-green-500 text-sm">
-              Transação confirmada: 
-              <a 
-                href={`https://etherscan.io/tx/${txHash}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="ml-2 underline"
-              >
-                Ver no Explorer
-              </a>
-            </p>
+    <div className="flex flex-col md:flex-row justify-center items-center p-8 rounded-lg">
+      <section className="w-xl p-6 rounded-lg relative">
+        <div className="relative z-10 mb-12">
+          <label className="block text-white font-semibold">From</label>
+          <div className="flex items-center justify-between border border-green-600 rounded-2xl p-2 bg-white">
+            <select
+              className="bg-white text-green-800 font-semibold px-2 py-1 rounded-2xl border border-green-600 focus:outline-none"
+              onChange={handleFromTokenChange}
+              value={fromToken.symbol}
+            >
+              {tokens.map((token, index) => (
+                <option key={index} value={token.symbol}>
+                  {token.symbol}
+                </option>
+              ))}
+            </select>
+            <input
+              className="w-full text-right focus:outline-none"
+              type="number"
+              placeholder="0"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <span className="flex items-center text-green-600">
+              Balance: {loading ? "Carregando..." : `${fromToken.balance} tokens`}
+            </span>
           </div>
-        )}
+        </div>
+        
+        <div className="relative z-10 mt-12">
+          <label className="block text-white font-semibold">To</label>
+          <div className="flex items-center justify-between border border-green-600 rounded-2xl p-2 bg-white">
+            <select
+              className="bg-white text-green-800 font-semibold px-2 py-1 rounded-2xl border border-green-600 focus:outline-none"
+              onChange={(e) => {
+                const selectedToken = tokens.find(token => token.symbol === e.target.value);
+                if (selectedToken) setToToken(selectedToken);
+              }}
+              value={toToken.symbol}
+            >
+              {tokens.map((token, index) => (
+                <option key={index} value={token.symbol}>
+                  {token.symbol}
+                </option>
+              ))}
+            </select>
+            <input 
+              className="w-full text-right focus:outline-none" 
+              type="number" 
+              value="0" 
+              readOnly 
+            />
+            <span className="flex items-center text-green-600">
+              Balance: {loading ? "Carregando..." : `${toToken.balance} tokens`}
+            </span>
+          </div>
+        </div>
       </section>
     </div>
   );

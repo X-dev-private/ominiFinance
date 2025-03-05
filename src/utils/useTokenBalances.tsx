@@ -1,6 +1,7 @@
+// src/hooks/useTokenBalances.ts
 import { useState, useEffect } from "react";
 import { BrowserProvider, Contract, formatUnits } from "ethers";
-import { TOKEN_ADDRESSES } from "../config/tokenAddresses";
+import { TOKEN_ADDRESSES, ChainId } from "../config/tokenAddresses";
 
 const ERC20_ABI = [
   "function balanceOf(address account) external view returns (uint256)"
@@ -31,7 +32,7 @@ export const useTokenBalances = (address?: string, chainId?: number) => {
       try {
         const provider = new BrowserProvider(window.ethereum);
         const network = await provider.getNetwork();
-        const currentChainId = network.chainId.toString();
+        const currentChainId = Number(network.chainId.toString()) as ChainId;
 
         if (!TOKEN_ADDRESSES[currentChainId]) {
           setBalances({
