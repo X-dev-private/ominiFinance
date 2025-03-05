@@ -13,6 +13,7 @@ import SwapPage from './pages/swappage';
 import PortifolioPage from './pages/portifolioPage';
 import "./App.css";
 import DebridgeExample from './pages/bridge';
+import RoadMapPage from './pages/roadmap';
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
+  },
+  {
+    path: "/roadmap",
+    element: <RoadMapPage />,
   },
   {
     path: "/app",

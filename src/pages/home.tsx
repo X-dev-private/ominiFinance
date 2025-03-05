@@ -1,19 +1,20 @@
 import "../App.css";
-import Logo from '../assets/Logo.png'
-import CapaA from '../assets/Bitcoin-amico.png'
-import CapaB from '../assets/Manage money-pana.png'
+import Logo from '../assets/Logo.png';
+import CapaA from '../assets/Bitcoin-amico.png';
+import CapaB from '../assets/Manage money-pana.png';
 import ImageCarousel from "../components/Carrosel";
 
 export default function Home() {
   return (
     <div className="App">
+      {/* Header */}
       <section
         title="header"
-        className=" text-green-900 flex justify-between items-center py-2 px-4 mb-30"
+        className="text-green-900 flex justify-between items-center py-2 px-4 mb-30"
       >
         <section className="flex items-center space-x-6">
           <img src={Logo} alt="Logo" className="h-12 object-contain mt-[-1px]" />
-          <a href="#" className="text-base font-semibold hover:text-green-700">Home</a>
+          <a href="/" className="text-base font-semibold hover:text-green-700">Home</a>
           <a
             href="https://omini-finance-docs.vercel.app/"
             className="text-base font-semibold hover:text-green-700"
@@ -22,7 +23,7 @@ export default function Home() {
           >
             Documentation
           </a>
-          <a href="#" className="text-base font-semibold hover:text-green-700">Career</a>
+          <a href="/roadmap" className="text-base font-semibold hover:text-green-700">RoadMap</a>
         </section>
         <section>
           <a
@@ -62,6 +63,8 @@ export default function Home() {
           A DAO OminiFinance prioriza a integração das economias das maiores blockchains, promovendo a interoperabilidade entre plataformas como Bitcoin, Ethereum, Binance Smart Chain e Solana. Acreditamos que a colaboração entre essas redes pode criar um ecossistema financeiro mais eficiente, ágil e acessível, impulsionando inovações e novos modelos de negócios. Ao unir forças, buscamos oferecer maior segurança, escalabilidade e oportunidades de diversificação para nossos membros, enquanto trabalhamos no desenvolvimento de soluções que facilitam a troca de ativos e dados entre as blockchains. A OminiFinance está comprometida em liderar essa transformação.
         </p>
       </section>
+
+      {/* Seção de Blockchains Suportadas */}
       <section className="max-w-6xl mx-auto py-24 text-center">
         <h2 className="text-6xl font-bold text-green-900 mb-4">
           Blockchains Suportadas
@@ -71,6 +74,8 @@ export default function Home() {
         </p>
         <ImageCarousel />
       </section>
+
+      {/* Footer */}
       <section
         title="footer"
         className="bg-green-100/30 text-green-900 py-6 px-6 flex justify-between items-center"
@@ -89,7 +94,7 @@ export default function Home() {
           >
             Documentation
           </a>
-          <a href="#" className="text-base font-semibold hover:text-green-700">Career</a>
+          <a href="/roadmap" className="text-base font-semibold hover:text-green-700">RoadMap</a>
         </div>
       </section>
     </div>
