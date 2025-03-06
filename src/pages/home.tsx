@@ -23,6 +23,14 @@ export default function Home() {
           >
             Documentation
           </a>
+          <a
+            href="https://omini-finance-docs.vercel.app/blog"
+            className="text-base font-semibold hover:text-green-700"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Blog
+          </a>
           <a href="/roadmap" className="text-base font-semibold hover:text-green-700">RoadMap</a>
         </section>
         <section>
@@ -93,6 +101,14 @@ export default function Home() {
             rel="noopener noreferrer"
           >
             Documentation
+          </a>
+          <a
+            href="https://omini-finance-docs.vercel.app/blog"
+            className="text-base font-semibold hover:text-green-700"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Blog
           </a>
           <a href="/roadmap" className="text-base font-semibold hover:text-green-700">RoadMap</a>
         </div>
