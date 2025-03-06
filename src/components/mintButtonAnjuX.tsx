@@ -1,32 +1,22 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import { useAccount, useChainId } from "wagmi";
-
-const contractAddress = "0x6c3aaaA93CC59f5A4288465F073C2B94DDBD3a05";
-
-const contractABI = [
-  {
-    inputs: [{ internalType: "address", name: "to", type: "address" }],
-    name: "mint",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+import { TOKEN_ADDRESSES, ChainId } from "../config/tokenAddresses";
 
 const MintButtonA: React.FC = () => {
   const { address, isConnected } = useAccount();
-  const chainId = useChainId();
+  const chainId = useChainId() as ChainId;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [showCooldownMessage, setShowCooldownMessage] = useState(false);
   const [opacity, setOpacity] = useState(0);
 
-  const isCorrectChain = chainId === 57054 || chainId === 11155111;
+  const isCorrectChain = chainId in TOKEN_ADDRESSES;
+  const contractAddress = isCorrectChain ? TOKEN_ADDRESSES[chainId].anjux : null;
 
   const mintToken = async () => {
-    if (!isConnected || !isCorrectChain) {
+    if (!isConnected || !isCorrectChain || !contractAddress) {
       setError("Conecte sua carteira e esteja na chain correta");
       return;
     }
@@ -39,7 +29,15 @@ const MintButtonA: React.FC = () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(contractAddress, contractABI, signer);
+      const contract = new ethers.Contract(contractAddress, [
+        {
+          inputs: [{ internalType: "address", name: "to", type: "address" }],
+          name: "mint",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ], signer);
 
       const tx = await contract.mint(address);
       await tx.wait();

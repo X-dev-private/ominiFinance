@@ -1,31 +1,31 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import { useAccount, useChainId } from "wagmi";
-
-const contractAddress = "0x1429c6F2Be05EFF1fB07F52D9D4880a108153dD4";
-
-const contractABI = [
-  {
-    inputs: [{ internalType: "address", name: "to", type: "address" }],
-    name: "mint",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+import { TOKEN_ADDRESSES, ChainId } from "../config/tokenAddresses" ;
 
 const MintButtonE: React.FC = () => {
   const { address, isConnected } = useAccount();
-  const chainId = useChainId();
+  const chainId = useChainId() as ChainId;
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showCooldownMessage, setShowCooldownMessage] = useState(false);
   const [opacity, setOpacity] = useState(0);
 
-  const isCorrectChain = chainId === 57054 || chainId === 11155111;
+  const isCorrectChain = chainId in TOKEN_ADDRESSES;
+  const contractAddress = isCorrectChain ? TOKEN_ADDRESSES[chainId]?.ethof : "";
+
+  const contractABI = [
+    {
+      inputs: [{ internalType: "address", name: "to", type: "address" }],
+      name: "mint",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+  ];
 
   const mintToken = async () => {
-    if (!isConnected || !isCorrectChain) {
+    if (!isConnected || !isCorrectChain || !contractAddress) {
       return;
     }
 

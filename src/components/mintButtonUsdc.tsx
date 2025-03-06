@@ -1,38 +1,35 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import { useAccount, useChainId } from "wagmi";
-
-const contractAddress = "0x32c00bD194B3ea78B9799394984DF8dB7397B834";
-
-const contractABI = [
-  {
-    inputs: [{ internalType: "address", name: "to", type: "address" }],
-    name: "mint",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+import { TOKEN_ADDRESSES, ChainId } from "../config/tokenAddresses";
 
 const MintButtonU: React.FC = () => {
   const { address, isConnected } = useAccount();
-  const chainId = useChainId();
+  const chainId = useChainId() as ChainId;
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [showCooldownMessage, setShowCooldownMessage] = useState(false);
   const [opacity, setOpacity] = useState(0);
 
-  const isCorrectChain = chainId === 57054 || chainId === 11155111;
+  const isCorrectChain = chainId in TOKEN_ADDRESSES;
+  const contractAddress = isCorrectChain ? TOKEN_ADDRESSES[chainId]?.usdcof : "";
+
+  const contractABI = [
+    {
+      inputs: [{ internalType: "address", name: "to", type: "address" }],
+      name: "mint",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+  ];
 
   const mintToken = async () => {
-    if (!isConnected || !isCorrectChain) {
-      setError("Conecte sua carteira e esteja na chain correta");
+    if (!isConnected || !isCorrectChain || !contractAddress) {
       return;
     }
 
     setLoading(true);
-    setError(null);
     setSuccess(false);
     setShowCooldownMessage(false);
 
@@ -53,8 +50,6 @@ const MintButtonU: React.FC = () => {
           setOpacity(0);
           setTimeout(() => setShowCooldownMessage(false), 1000);
         }, 4000);
-      } else {
-        setError(err.message || "Erro ao mintar token");
       }
     } finally {
       setLoading(false);
@@ -66,15 +61,13 @@ const MintButtonU: React.FC = () => {
       <button
         onClick={mintToken}
         disabled={!isConnected || loading || !isCorrectChain}
-        className="px-6 py-2 text-white bg-green-500 rounded-lg transition-colors duration-300 hover:bg-green-600 disabled:opacity-50 disabled:hover:bg-red-400"
-      >
+        className="px-6 py-2 text-white bg-green-500 rounded-lg transition-colors duration-300 hover:bg-green-600 disabled:opacity-50 disabled:hover:bg-red-400">
         {loading ? "Mintando..." : "Mint USDCoF Token"}
       </button>
 
       {!isConnected && <p className="text-red-500">Conecte sua carteira</p>}
       {!isCorrectChain && <p className="text-red-500">Troque para a chain correta</p>}
       {success && <p className="text-green-500">Token mintado com sucesso!</p>}
-      {error && <p className="text-red-500">Erro: {error}</p>}
 
       {showCooldownMessage && (
         <div
