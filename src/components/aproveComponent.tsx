@@ -11,7 +11,9 @@ interface ApproveComponentProps {
 
 const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, toToken }) => {
   const chainId = useChainId();
-  const [loading, setLoading] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [swapLoading, setSwapLoading] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
 
   // Obtém os dados da chain
   const chainData = TOKEN_ADDRESSES[chainId as keyof typeof TOKEN_ADDRESSES];
@@ -31,11 +33,6 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
     toTokenKey
   );
 
-  console.log("Chain ID:", chainId);
-  console.log("From Token:", fromToken, "Address:", fromAddress);
-  console.log("To Token:", toToken, "Address:", toAddress);
-  console.log("Liquidity Pool Address:", poolAddress);
-
   const handleApprove = async () => {
     if (!window.ethereum) {
       alert("MetaMask não detectado!");
@@ -53,36 +50,72 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
     }
 
     try {
-      setLoading(true);
+      setApproveLoading(true);
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // ABI mínima do ERC-20 para chamar approve
       const erc20Abi = [
         "function approve(address spender, uint256 amount) public returns (bool)",
       ];
       const contract = new ethers.Contract(fromAddress, erc20Abi, signer);
 
-      // Converte o amount para Wei (18 casas decimais, ajuste se necessário)
       const amountInWei = ethers.parseUnits(amount, 18);
-
-      // Chama approve passando a Liquidity Pool como spender
       const tx = await contract.approve(poolAddress, amountInWei);
       await tx.wait();
 
+      setIsApproved(true);
       alert("Aprovação realizada com sucesso!");
     } catch (error) {
       console.error("Erro ao aprovar:", error);
       alert("Erro ao aprovar tokens!");
     } finally {
-      setLoading(false);
+      setApproveLoading(false);
+    }
+  };
+
+  const handleSwap = async () => {
+    if (!window.ethereum) {
+      alert("MetaMask não detectado!");
+      return;
+    }
+
+    if (!poolAddress || !fromAddress) {
+      alert("Endereços necessários não configurados!");
+      return;
+    }
+
+    if (!amount || Number(amount) <= 0) {
+      alert("Quantidade inválida para swap!");
+      return;
+    }
+
+    try {
+      setSwapLoading(true);
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const poolAbi = [
+        "function swap(address fromToken, uint256 amountIn) external returns (uint256 amountOut)"
+      ];
+
+      const amountInWei = ethers.parseUnits(amount, 18);
+      const poolContract = new ethers.Contract(poolAddress, poolAbi, signer);
+
+      const tx = await poolContract.swap(fromAddress, amountInWei);
+      await tx.wait();
+
+      alert("Swap realizado com sucesso!");
+    } catch (error) {
+      console.error("Erro no swap:", error);
+      alert("Erro ao realizar swap!");
+    } finally {
+      setSwapLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen p-8 flex items-center justify-center">
       <div className="w-full max-w-md space-y-6">
-        {/* Token Approval Card */}
         <section className="bg-white rounded-2xl p-6 shadow-lg transition-all hover:shadow-xl">
           <div className="flex items-start gap-4">
             <div className="bg-green-100 p-3 rounded-full">
@@ -109,13 +142,24 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
                 <span className="text-gray-500">Amount: {amount}</span>
                 <span className="text-gray-500">From Token: {fromToken || "N/A"}</span>
                 <span className="text-gray-500">To Token: {toToken || "N/A"}</span>
-                <button
-                  onClick={handleApprove}
-                  disabled={loading}
-                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  {loading ? "Approving..." : "Approve"}
-                </button>
+                
+                {!isApproved ? (
+                  <button
+                    onClick={handleApprove}
+                    disabled={approveLoading}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    {approveLoading ? "Approving..." : "Approve"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSwap}
+                    disabled={swapLoading}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    {swapLoading ? "Swapping..." : "Swap Tokens"}
+                  </button>
+                )}
               </div>
             </div>
           </div>
