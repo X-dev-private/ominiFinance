@@ -15,6 +15,10 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
   const [swapLoading, setSwapLoading] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
 
+  // Defina um endereço fixo (exemplo) se não houver endereço válido
+  const FIXED_FROM_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678"; // Substitua por um endereço real
+  const FIXED_POOL_ADDRESS = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef"; // Substitua por um endereço real
+
   // Obtém os dados da chain
   const chainData = TOKEN_ADDRESSES[chainId as keyof typeof TOKEN_ADDRESSES];
 
@@ -33,18 +37,22 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
     toTokenKey
   );
 
+  // Lógica para garantir o uso de um endereço fixo se nenhum for encontrado
+  const finalFromAddress = fromAddress || FIXED_FROM_ADDRESS;
+  const finalPoolAddress = poolAddress || FIXED_POOL_ADDRESS;
+
   const handleApprove = async () => {
     if (!window.ethereum) {
       alert("MetaMask não detectado!");
       return;
     }
 
-    if (!fromAddress) {
+    if (!finalFromAddress) {
       alert("Endereço do token de origem não encontrado! Verifique o símbolo do token.");
       return;
     }
 
-    if (!poolAddress) {
+    if (!finalPoolAddress) {
       alert("Endereço da Liquidity Pool não encontrado!");
       return;
     }
@@ -57,10 +65,10 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
       const erc20Abi = [
         "function approve(address spender, uint256 amount) public returns (bool)",
       ];
-      const contract = new ethers.Contract(fromAddress, erc20Abi, signer);
+      const contract = new ethers.Contract(finalFromAddress, erc20Abi, signer);
 
       const amountInWei = ethers.parseUnits(amount, 18);
-      const tx = await contract.approve(poolAddress, amountInWei);
+      const tx = await contract.approve(finalPoolAddress, amountInWei);
       await tx.wait();
 
       setIsApproved(true);
@@ -79,7 +87,7 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
       return;
     }
 
-    if (!poolAddress || !fromAddress) {
+    if (!finalPoolAddress || !finalFromAddress) {
       alert("Endereços necessários não configurados!");
       return;
     }
@@ -99,9 +107,9 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
       ];
 
       const amountInWei = ethers.parseUnits(amount, 18);
-      const poolContract = new ethers.Contract(poolAddress, poolAbi, signer);
+      const poolContract = new ethers.Contract(finalPoolAddress, poolAbi, signer);
 
-      const tx = await poolContract.swap(fromAddress, amountInWei);
+      const tx = await poolContract.swap(finalFromAddress, amountInWei);
       await tx.wait();
 
       alert("Swap realizado com sucesso!");
@@ -119,17 +127,17 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
         <section className="bg-white rounded-2xl p-6 shadow-lg transition-all hover:shadow-xl">
           <div className="flex items-start gap-4">
             <div className="bg-green-100 p-3 rounded-full">
-              <svg 
-                className="w-6 h-6 text-green-600" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M5 13l4 4L19 7" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
                 />
               </svg>
             </div>
@@ -142,7 +150,7 @@ const ApproveComponent: React.FC<ApproveComponentProps> = ({ amount, fromToken, 
                 <span className="text-gray-500">Amount: {amount}</span>
                 <span className="text-gray-500">From Token: {fromToken || "N/A"}</span>
                 <span className="text-gray-500">To Token: {toToken || "N/A"}</span>
-                
+
                 {!isApproved ? (
                   <button
                     onClick={handleApprove}
