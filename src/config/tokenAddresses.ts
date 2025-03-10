@@ -14,6 +14,20 @@ export const TOKEN_ADDRESSES = {
       "ethof-usdcof": "0x48b7Fd2EbF4b5697BD7EC66Ae676b6C14150E91e",
     },
   },
+  421614: {
+    anjux: "0x1429c6F2Be05EFF1fB07F52D9D4880a108153dD4",
+    ethof: "0x32c00bD194B3ea78B9799394984DF8dB7397B834",
+    usdcof: "0xD9BEF40A259Cc6458457313438d9deb1D74fbfD5",
+    liquidityPools: {
+      "anjux-usdcof": "0x6c3aaaA93CC59f5A4288465F073C2B94DDBD3a05",
+      "anjux-ethof": "0x3E6aC4C839e84dEe3AD027890D0Fc27bE41c6bb7",
+      "ethof-usdcof": "0x5Bfeb704Ac4527df4678a05A056b3F58A2426FD4",
+    },
+  },
+  5: {},     // Goerli
+  1: {},     // Ethereum Mainnet
+  42161: {}, // Arbitrum
+  146: {}    // Sonic
 } as const;
 
 // Obtém os possíveis ChainIds dinamicamente

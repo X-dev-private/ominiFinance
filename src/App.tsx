@@ -5,7 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { projectId, metadata, networks, wagmiAdapter } from './config';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { NetworkColorProvider } from './config/networkColorContext';  // Importando o contexto
+import { NetworkColorProvider } from './config/networkColorContext';
 import Actives from './pages/activespage';
 import Home from './pages/home';
 import LiquidityPage from './pages/liquidyPage';

@@ -36,7 +36,7 @@ export default function Home() {
         <section>
           <a
             href="/app"
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm"
+            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg hover:bg-gradient-to-r hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/50"
           >
             Launcher Testnet
           </a>
@@ -59,7 +59,7 @@ export default function Home() {
         </section>
         <a
           href="/app"
-          className="absolute left-1/2 bottom-[-25px] transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition shadow-lg"
+          className="absolute left-1/2 bottom-[-25px] transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg hover:bg-gradient-to-r hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50"
         >
           Launcher Testnet
         </a>
@@ -67,18 +67,18 @@ export default function Home() {
 
       {/* Texto adicional sobre a DAO OminiFinance */}
       <section className="max-w-6xl mx-auto py-6 text-green-900 text-lg mb-16">
-        <p>
-          A DAO OminiFinance prioriza a integração das economias das maiores blockchains, promovendo a interoperabilidade entre plataformas como Bitcoin, Ethereum, Binance Smart Chain e Solana. Acreditamos que a colaboração entre essas redes pode criar um ecossistema financeiro mais eficiente, ágil e acessível, impulsionando inovações e novos modelos de negócios. Ao unir forças, buscamos oferecer maior segurança, escalabilidade e oportunidades de diversificação para nossos membros, enquanto trabalhamos no desenvolvimento de soluções que facilitam a troca de ativos e dados entre as blockchains. A OminiFinance está comprometida em liderar essa transformação.
+        <p className="mx-auto rounded-xl p-4 text-lg leading-relaxed">
+          The OminiFinance DAO prioritizes integrating the economies of major blockchains, promoting interoperability between platforms like Bitcoin, Ethereum, Binance Smart Chain, and Solana. We believe collaboration between these networks can create a more efficient, agile, and accessible financial ecosystem, driving innovation and new business models. By joining forces, we aim to provide enhanced security, scalability, and diversification opportunities for our members, while developing solutions that facilitate asset and data exchange between blockchains. OminiFinance is committed to leading this transformation.
         </p>
       </section>
 
       {/* Seção de Blockchains Suportadas */}
       <section className="max-w-6xl mx-auto py-24 text-center">
         <h2 className="text-6xl font-bold text-green-900 mb-4">
-          Blockchains Suportadas
+          Supported Blockchains
         </h2>
         <p className="text-lg text-green-800 mb-6">
-          A OminiFinance promove a integração entre diversas blockchains líderes do mercado, permitindo maior interoperabilidade e inovação no ecossistema financeiro descentralizado.
+          OminiFinance promotes integration among various leading market blockchains, enabling greater interoperability and innovation in the decentralized financial ecosystem.
         </p>
         <ImageCarousel />
       </section>
@@ -89,7 +89,7 @@ export default function Home() {
         className="bg-green-100/30 text-green-900 py-6 px-6 flex justify-between items-center"
       >
         <div className="text-sm">
-          <p>&copy; 2025 OmniFinance. Todos os direitos reservados.</p>
+          <p>&copy; 2025 OmniFinance. All rights reserved.</p>
           <p>Powered by ZeroElevenTeam</p>
         </div>
         <div className="flex space-x-6">

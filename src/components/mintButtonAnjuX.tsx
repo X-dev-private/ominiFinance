@@ -17,7 +17,7 @@ const MintButtonA: React.FC = () => {
 
   const mintToken = async () => {
     if (!isConnected || !isCorrectChain || !contractAddress) {
-      setError("Conecte sua carteira e esteja na chain correta");
+      setError("Connect your wallet and switch to the correct chain");
       return;
     }
 
@@ -52,7 +52,7 @@ const MintButtonA: React.FC = () => {
           setTimeout(() => setShowCooldownMessage(false), 1000);
         }, 4000);
       } else {
-        setError(err.message || "Erro ao mintar token");
+        setError(err.message || "Error minting token");
       }
     } finally {
       setLoading(false);
@@ -64,22 +64,22 @@ const MintButtonA: React.FC = () => {
       <button
         onClick={mintToken}
         disabled={!isConnected || loading || !isCorrectChain}
-        className="px-6 py-2 text-white bg-green-500 rounded-lg transition-colors duration-300 hover:bg-green-600 disabled:opacity-50 disabled:hover:bg-red-400"
+        className="px-6 py-3 text-white font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:hover:bg-gradient-to-r disabled:from-green-600 disabled:to-emerald-600 disabled:hover:scale-100"
       >
-        {loading ? "Mintando..." : "Mint AnJuX Token"}
+        {loading ? "Minting..." : "Mint AnJuX Token"}
       </button>
 
-      {!isConnected && <p className="text-red-500">Conecte sua carteira</p>}
-      {!isCorrectChain && <p className="text-red-500">Troque para a chain correta</p>}
-      {success && <p className="text-green-500">Token mintado com sucesso!</p>}
-      {error && <p className="text-red-500">Erro: {error}</p>}
+      {!isConnected && <p className="text-red-500">Connect your wallet</p>}
+      {!isCorrectChain && <p className="text-red-500">Switch to the correct chain</p>}
+      {success && <p className="text-green-500">Token minted successfully!</p>}
+      {error && <p className="text-red-500">Error: {error}</p>}
 
       {showCooldownMessage && (
         <div
           className="absolute top-12 bg-green-800 text-white text-sm p-2 rounded-lg shadow-lg w-60 text-center transition-opacity duration-1000"
           style={{ opacity: opacity / 100 }}
         >
-          ⏳ Você já mintou recentemente. Tente novamente em 24 horas.
+          ⏳ You have already minted recently. Try again in 24 hours.
         </div>
       )}
     </div>

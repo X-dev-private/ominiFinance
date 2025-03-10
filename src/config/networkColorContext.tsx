@@ -30,6 +30,8 @@ export const NetworkColorProvider: React.FC<NetworkColorProviderProps> = ({ chil
         setNetworkColor("bg-gradient-to-b from-white via-gray-400 to-white"); // Ethereum Mainnet
       } else if (chainId === 42161) {
         setNetworkColor("bg-gradient-to-b from-white via-blue-500 to-white"); // Arbitrum
+      } else if (chainId === 421614) {
+        setNetworkColor("bg-gradient-to-b from-white via-blue-600 to-white"); // Arbitrum Sepolia
       } else if (chainId === 146) {
         setNetworkColor("bg-gradient-to-b from-white via-gray-800 to-white "); // Sonic (Tema escuro)
       } else if (chainId === 57054) {
