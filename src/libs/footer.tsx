@@ -4,17 +4,17 @@ export default function Footer() {
             <div className="flex flex-row gap-6 mb-6">
                 <a 
                     href="" 
-                    className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/50">
+                    className="px-6 py-2 text-sm font-medium bg-white border border-green-500 text-green-600 rounded-lg hover:bg-gradient-to-r hover:from-green-400 hover:to-green-600 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/50">
                     Home
                 </a>
                 <a 
                     href="" 
-                    className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/50">
+                    className="px-6 py-2 text-sm font-medium bg-white border border-green-500 text-green-600 rounded-lg hover:bg-gradient-to-r hover:from-green-400 hover:to-green-600 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/50">
                     About
                 </a>
                 <a 
                     href="" 
-                    className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/50">
+                    className="px-6 py-2 text-sm font-medium bg-white border border-green-500 text-green-600 rounded-lg hover:bg-gradient-to-r hover:from-green-400 hover:to-green-600 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/50">
                     Contact
                 </a>
             </div>
