@@ -10,9 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chain-registry/client": "^1.53.92",
+    "@chain-registry/utils": "^1.51.92",
+    "@cosmjs/stargate": "^0.33.0",
     "@debridge-finance/desdk": "^1.0.2",
+    "@keplr-wallet/types": "^0.12.196",
     "@reown/appkit": "1.6.8",
     "@reown/appkit-adapter-wagmi": "1.6.8",
+    "@sei-js/react": "^3.2.0",
     "@tailwindcss/vite": "^4.0.7",
     "@tanstack/react-query": "^5.56.2",
     "@uniswap/sdk": "^3.0.3",

@@ -14,6 +14,13 @@ import PortifolioPage from './pages/portifolioPage';
 import "./App.css";
 import DebridgeExample from './pages/bridge';
 import RoadMapPage from './pages/roadmap';
+import { SeiWalletProvider } from '@sei-js/react';
+
+const COSMOS_CONFIG = {
+  chainId: 'cosmoshub-4',
+  restUrl: 'https://lcd-cosmoshub.keplr.app',
+  rpcUrl: 'https://rpc-cosmoshub.keplr.app'
+};
 
 const queryClient = new QueryClient();
 
@@ -34,6 +41,21 @@ createAppKit({
     analytics: true, // Optional - defaults to your Cloud configuration
   },
 });
+
+const KEPLR_WALLET = {
+  getAccounts: async (chainId: string) => {
+    const offlineSigner = await window.keplr?.getOfflineSignerAuto(chainId);
+    return offlineSigner?.getAccounts() || [];
+  },
+  connect: async (chainId: string) => await window.keplr?.enable(chainId),
+  disconnect: async () => await window.keplr?.disconnect(),
+  getOfflineSigner: (chainId: string) => window.keplr?.getOfflineSignerAuto(chainId),
+  walletInfo: {
+    windowKey: 'keplr',
+    name: 'Keplr',
+    icon: 'https://assets.keplr.app/logo.png'
+  }
+};
 
 // Definindo as rotas
 const router = createBrowserRouter([
@@ -66,12 +88,18 @@ const App: React.FC = () => {
   return (
     <div className="pages">
       <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+        <SeiWalletProvider 
+          chainConfiguration={COSMOS_CONFIG}
+          wallets={[KEPLR_WALLET]}
+          autoconnect={false}
+        >
         <QueryClientProvider client={queryClient}>
           <NetworkColorProvider> 
           <SpeedInsights />
             <RouterProvider router={router} />
           </NetworkColorProvider>
         </QueryClientProvider>
+        </SeiWalletProvider>
       </WagmiProvider>
     </div>
   );
