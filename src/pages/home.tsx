@@ -35,7 +35,7 @@ export default function Home() {
         </section>
         <section>
           <a
-            href="/app"
+            href="/app/Dashboard"
             className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg hover:bg-gradient-to-r hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/50"
           >
             Launcher Testnet
@@ -58,7 +58,7 @@ export default function Home() {
           />
         </section>
         <a
-          href="/app"
+          href="/app/Dashboard"
           className="absolute left-1/2 bottom-[-25px] transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg hover:bg-gradient-to-r hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50"
         >
           Launcher Testnet
