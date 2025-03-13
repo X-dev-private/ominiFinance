@@ -10,6 +10,32 @@ import { ethers } from 'ethers';
 const Actives: React.FC = () => {
   const networkColor = useNetworkColor(); // Obtendo a cor da rede do contexto
 
+  const connectToLuksoTestnet = async () => {
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: ethers.toBeHex(4201), // Chain ID da LUKSO Testnet
+            chainName: 'LUKSO Testnet',
+            nativeCurrency: {
+              name: 'LYX',
+              symbol: 'LYXt',
+              decimals: 18,
+            },
+            rpcUrls: ['https://rpc.testnet.lukso.network'],
+            blockExplorerUrls: ['https://explorer.execution.testnet.lukso.network/'],
+          }],
+        });
+        alert('LUKSO Testnet connected successfully!');
+      } catch (error) {
+        console.error('Error connecting to LUKSO Testnet:', error);
+        alert('Failed to connect to LUKSO Testnet. Please check the console for details.');
+      }
+    } else {
+      alert('MetaMask not detected. Please install MetaMask to continue.');
+    }
+  };
   // Função para conectar à rede Blaze Sonic Testnet
   const connectToBlazeSonic = async () => {
     if (window.ethereum) {
@@ -98,10 +124,16 @@ const Actives: React.FC = () => {
             >
               Connect to Arbitrum Sepolia
             </button>
+            <button
+              onClick={connectToLuksoTestnet}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              Connect to LUKSO Testnet
+            </button>
           </div>
 
           <p className="max-w-lg mx-auto border border-white/20 rounded-xl p-4 bg-black/30 text-lg leading-relaxed">
-            To test this application, you need to connect your wallet to one of the supported networks. Click the buttons above to add the Blaze Sonic or Arbitrum Sepolia networks to your MetaMask. 
+            To test this application, you need to connect your wallet to one of the supported networks. Click the buttons above to add the networks to your MetaMask. 
             Make sure you have MetaMask installed and that the desired network is configured correctly.
           </p>
         </div>

@@ -68,7 +68,7 @@ const router = createBrowserRouter([
     element: <RoadMapPage />,
   },
   {
-    path: "/app",
+    path: "/app/Dashboard",
     element: <Actives />,
   },
   {

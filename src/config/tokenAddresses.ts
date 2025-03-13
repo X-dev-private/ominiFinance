@@ -24,6 +24,16 @@ export const TOKEN_ADDRESSES = {
       "ethof-usdcof": "0x5Bfeb704Ac4527df4678a05A056b3F58A2426FD4",
     },
   },
+  4201: {
+    anjux: "0x6c3aaaA93CC59f5A4288465F073C2B94DDBD3a05",
+    ethof: "0x1429c6F2Be05EFF1fB07F52D9D4880a108153dD4",
+    usdcof: "0x32c00bD194B3ea78B9799394984DF8dB7397B834",
+    liquidityPools: {
+      "anjux-usdcof": "0x884aE5072b53B06cfBE043a53D9bee5E43Cc38F1",
+      "anjux-ethof": "0x84c4E1866D0b8C2CEae7d82A24b7F44F01a43E9B",
+      "ethof-usdcof": "0x209CA88ecF47049ae58162d82231087CfD2A80E9",
+    },
+  },
   5: {},     // Goerli
   1: {},     // Ethereum Mainnet
   42161: {}, // Arbitrum
@@ -69,13 +79,3 @@ export function getTokenAndPoolAddresses<T extends ChainId>(
 
   return { fromAddress, toAddress, poolAddress };
 }
-
-// Exemplo de uso:
-const chainId: ChainId = 57054;
-const fromToken: TokenType<typeof chainId> = "anjux";
-const toToken: TokenType<typeof chainId> = "usdcof";
-
-const { fromAddress, toAddress, poolAddress } = getTokenAndPoolAddresses(chainId, fromToken, toToken);
-console.log("From:", fromAddress);
-console.log("To:", toAddress);
-console.log("Pool:", poolAddress);

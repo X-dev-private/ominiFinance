@@ -1,5 +1,5 @@
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { mainnet, arbitrum, arbitrumSepolia , sepolia , sonic } from '@reown/appkit/networks'
+import { mainnet, arbitrum, arbitrumSepolia , sepolia , sonic , luksoTestnet } from '@reown/appkit/networks'
 import { sonicBlazeTestnet } from '../networks/blazeSonic'
 import type { AppKitNetwork } from '@reown/appkit/networks'
 
@@ -18,7 +18,7 @@ export const metadata = {
 }
 
 // Add the Sonic Blaze Testnet to the networks array
-export const networks = [mainnet, arbitrum, arbitrumSepolia , sepolia, sonic , sonicBlazeTestnet] as [AppKitNetwork, ...AppKitNetwork[]]
+export const networks = [mainnet, arbitrum, arbitrumSepolia , sepolia, sonic , sonicBlazeTestnet , luksoTestnet] as [AppKitNetwork, ...AppKitNetwork[]]
 
 // Set up the Wagmi Adapter (Config)
 export const wagmiAdapter = new WagmiAdapter({

@@ -36,6 +36,8 @@ export const NetworkColorProvider: React.FC<NetworkColorProviderProps> = ({ chil
         setNetworkColor("bg-gradient-to-b from-white via-gray-800 to-white "); // Sonic (Tema escuro)
       } else if (chainId === 57054) {
         setNetworkColor("bg-gradient-to-b from-white via-gray-700 to-white"); // Blaze Sonic Testnet (Tema escuro)
+      } else if (chainId === 4201) { // LUKSO Testnet
+        setNetworkColor("bg-gradient-to-b from-white via-pink-400 to-white"); // Gradiente rosa
       } else {
         setNetworkColor("bg-gradient-to-b from-white via-green-300 to-white"); // Padrão suave
       }

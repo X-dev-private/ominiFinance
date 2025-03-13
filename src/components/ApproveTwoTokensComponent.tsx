@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useChainId } from "wagmi";
-import { TOKEN_ADDRESSES, getTokenAndPoolAddresses, TokenType } from "../config/tokenAddresses";
+import { TOKEN_ADDRESSES, getTokenAndPoolAddresses } from "../config/tokenAddresses";
 import { ethers } from "ethers";
 
 interface ApproveTwoTokensComponentProps {
@@ -15,23 +15,24 @@ const ApproveTwoTokensComponent: React.FC<ApproveTwoTokensComponentProps> = ({ a
   const [fromTokenApproved, setFromTokenApproved] = useState(false);
   const [toTokenApproved, setToTokenApproved] = useState(false);
 
-  // Obtém os dados da chain
-  const chainData = TOKEN_ADDRESSES[chainId as keyof typeof TOKEN_ADDRESSES];
+  if (!chainId) {
+    console.error("Chain ID não encontrado.");
+    return <p className="text-red-500">Erro: Chain ID não detectado.</p>;
+  }
+
+  const chainData = TOKEN_ADDRESSES[chainId];
 
   if (!chainData) {
     console.error(`Nenhuma configuração encontrada para chainId: ${chainId}`);
+    return <p className="text-red-500">Erro: Nenhuma configuração encontrada para essa rede.</p>;
   }
 
   // Converte os tokens para lowercase para garantir compatibilidade
-  const fromTokenKey = fromToken.toLowerCase() as TokenType<typeof chainId>;
-  const toTokenKey = toToken.toLowerCase() as TokenType<typeof chainId>;
+  const fromTokenKey = fromToken.toLowerCase();
+  const toTokenKey = toToken.toLowerCase();
 
   // Obtém os endereços dos tokens e da pool
-  const { fromAddress, toAddress, poolAddress } = getTokenAndPoolAddresses(
-    chainId as keyof typeof TOKEN_ADDRESSES,
-    fromTokenKey,
-    toTokenKey
-  );
+  const { fromAddress, toAddress, poolAddress } = getTokenAndPoolAddresses(chainId, fromTokenKey, toTokenKey);
 
   console.log("Chain ID:", chainId);
   console.log("From Token:", fromToken, "Address:", fromAddress);
