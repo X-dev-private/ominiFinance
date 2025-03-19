@@ -15,6 +15,8 @@ import "./App.css";
 import DebridgeExample from './pages/bridge';
 import RoadMapPage from './pages/roadmap';
 import { SeiWalletProvider } from '@sei-js/react';
+import CreateTokenPage from './pages/createTokenPage';
+import MyTokensPage from './pages/myTokensPage';
 
 const COSMOS_CONFIG = {
   chainId: 'cosmoshub-4',
@@ -79,8 +81,14 @@ const router = createBrowserRouter([
     element: <SwapPage />,
   },
   {
-    path: "/app/portifolio",
+    path: "/app/portfolio",
     element: <PortifolioPage />,
+  },{
+    path: "/app/create-token",
+    element: <CreateTokenPage />,
+  },{
+    path: "/app/my-tokens",
+    element: <MyTokensPage />,
   },
 ]);
 
