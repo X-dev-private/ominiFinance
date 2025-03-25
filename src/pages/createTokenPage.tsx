@@ -56,12 +56,12 @@ export default function CreateTokenPage() {
   }
 
   // Função para formatar o valor com separadores de milhar
-  const formatNumberWithSeparators = (value) => {
+  const formatNumberWithSeparators = (value: string) => {
     return value.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
   // Função para lidar com a mudança no campo initialSupply
-  const handleInitialSupplyChange = (e) => {
+  const handleInitialSupplyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/\D/g, ""); // Remove todos os não dígitos
     const formattedValue = formatNumberWithSeparators(rawValue); // Formata o valor
 
@@ -69,7 +69,7 @@ export default function CreateTokenPage() {
     setFormattedInitialSupply(formattedValue); // Armazena o valor formatado
   };
 
-  const handleCreateToken = async (e) => {
+  const handleCreateToken = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!tokenName || !tokenSymbol || !initialSupply) {
@@ -85,15 +85,18 @@ export default function CreateTokenPage() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // Endereço do contrato TokenFactory (substitua pelo endereço do seu contrato)
-      const TOKEN_FACTORY_ADDRESS = chainData.tokenFactory; // Adicione o endereço da TokenFactory no seu arquivo de configuração
+      // Convertemos o supply para BigInt diretamente (sem multiplicar por decimais)
+      const initialSupplyBigInt = BigInt(initialSupply);
+
+      const TOKEN_FACTORY_ADDRESS = chainData.tokenFactory;
       const TOKEN_FACTORY_ABI = [
         "function createToken(string memory name, string memory symbol, uint256 initialSupply) external returns (address)",
       ];
 
       const tokenFactory = new ethers.Contract(TOKEN_FACTORY_ADDRESS, TOKEN_FACTORY_ABI, signer);
 
-      const tx = await tokenFactory.createToken(tokenName, tokenSymbol, ethers.parseEther(initialSupply));
+      // Passamos o valor diretamente sem multiplicar por decimais
+      const tx = await tokenFactory.createToken(tokenName, tokenSymbol, initialSupplyBigInt);
       await tx.wait();
 
       setSuccess("Token criado com sucesso! Visite a página 'My Tokens' para ver seus tokens criados.");
@@ -103,7 +106,7 @@ export default function CreateTokenPage() {
       setFormattedInitialSupply("");
     } catch (err) {
       console.error("Erro ao criar o token:", err);
-      setError("Erro ao criar o token: " + err.message);
+      setError("Erro ao criar o token: " + (err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -156,19 +159,22 @@ export default function CreateTokenPage() {
 
             <div>
               <label htmlFor="initialSupply" className="block text-sm font-medium text-white">
-                Supply Inicial
+                Supply Inicial (unidades inteiras)
               </label>
               <input
                 type="text"
                 id="initialSupply"
                 name="initialSupply"
-                placeholder="Ex: 100.000.000"
+                placeholder="Ex: 100000000"
                 value={formattedInitialSupply}
                 onChange={handleInitialSupplyChange}
                 className={`mt-1 block w-full px-4 py-2 border bg-white ${
                   initialSupply ? "opacity-100" : "opacity-50"
                 } border-green-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none`}
               />
+              <p className="mt-1 text-sm text-gray-300">
+                Digite apenas números inteiros (sem casas decimais)
+              </p>
             </div>
 
             <div>

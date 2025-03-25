@@ -5,18 +5,99 @@ import { TOKEN_ADDRESSES } from "../config/tokenAddresses";
 import Header from "../libs/header";
 import Footer from "../libs/footer";
 import "../App.css";
-import { useNetworkColor } from '../config/networkColorContext'; // Importe o hook
+import { useNetworkColor } from '../config/networkColorContext';
+import { useNavigate } from "react-router-dom";
 
 export default function MyTokensPage() {
-  const { address } = useAccount(); // Obtém o endereço da carteira conectada
-  const chainId = useChainId(); // Obtém o ID da rede conectada
-  const networkColor = useNetworkColor(); // Obtém a cor da rede
-  const [tokens, setTokens] = useState([]); // Armazena os tokens criados pelo usuário
-  const [loading, setLoading] = useState(true); // Estado de carregamento
-  const [error, setError] = useState(""); // Mensagem de erro
+  const { address } = useAccount();
+  const chainId = useChainId();
+  const networkColor = useNetworkColor();
+  const [tokens, setTokens] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  // Verifica se a rede conectada é suportada
   const chainData = TOKEN_ADDRESSES[chainId as keyof typeof TOKEN_ADDRESSES];
+
+  // Função para formatar o supply com decimais e separadores de milhar
+  const formatTokenSupply = (supply: bigint, decimals = 18): string => {
+    try {
+      // Converte para número com casas decimais
+      const formatted = ethers.formatUnits(supply, decimals);
+      const numberValue = Number(formatted);
+      
+      // Formata com separadores de milhar e 3 casas decimais
+      return numberValue.toLocaleString('pt-BR', {
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3
+      });
+    } catch {
+      return "0,000";
+    }
+  };
+
+  // Função para buscar informações completas do token
+  const fetchTokenDetails = async (tokenAddress: string, provider: ethers.BrowserProvider) => {
+    try {
+      const TOKEN_FACTORY_ABI = [
+        `function getTokenByAddress(address tokenAddress) external view returns (
+          string memory name,
+          string memory symbol,
+          uint256 totalSupply,
+          address owner,
+          bool isValid
+        )`
+      ];
+
+      const tokenFactory = new ethers.Contract(
+        chainData.tokenFactory,
+        TOKEN_FACTORY_ABI,
+        provider
+      );
+
+      const [name, symbol, totalSupply, owner, isValid] = 
+        await tokenFactory.getTokenByAddress(tokenAddress);
+
+      // Busca decimais separadamente
+      let decimals = 18;
+      try {
+        const tokenContract = new ethers.Contract(
+          tokenAddress,
+          ["function decimals() view returns (uint8)"],
+          provider
+        );
+        decimals = await tokenContract.decimals();
+      } catch {
+        console.log("Using default decimals (18)");
+      }
+
+      return {
+        address: tokenAddress,
+        name,
+        symbol,
+        totalSupply: formatTokenSupply(totalSupply, decimals),
+        owner,
+        isValid,
+        decimals
+      };
+    } catch (err) {
+      console.error("Error fetching token details:", err);
+      return {
+        address: tokenAddress,
+        name: "Error",
+        symbol: "ERR",
+        totalSupply: "0,000",
+        owner: address,
+        isValid: false,
+        decimals: 18
+      };
+    }
+  };
+
+  // Função para lidar com o clique no token
+  const handleTokenClick = (tokenAddress: string) => {
+    navigate(`/app/TokenConfig`, { state: { tokenAddress } });
+  };
 
   useEffect(() => {
     if (!address || !chainData?.tokenFactory) return;
@@ -26,27 +107,25 @@ export default function MyTokensPage() {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
 
-        // Endereço e ABI do contrato TokenFactory
-        const TOKEN_FACTORY_ADDRESS = chainData.tokenFactory;
         const TOKEN_FACTORY_ABI = [
-          "function getTokensByOwner(address owner) external view returns (address[] memory)",
+          "function getTokensByOwner(address owner) external view returns (address[] memory)"
         ];
 
-        const tokenFactory = new ethers.Contract(TOKEN_FACTORY_ADDRESS, TOKEN_FACTORY_ABI, signer);
+        const tokenFactory = new ethers.Contract(
+          chainData.tokenFactory,
+          TOKEN_FACTORY_ABI,
+          signer
+        );
 
-        // Obtém os tokens criados pelo usuário
         const tokenAddresses = await tokenFactory.getTokensByOwner(address);
 
-        // Obtém os símbolos dos tokens
         const tokenDetails = await Promise.all(
           tokenAddresses.map(async (tokenAddress) => {
-            const tokenContract = new ethers.Contract(tokenAddress, ["function symbol() view returns (string)"], provider);
-            const symbol = await tokenContract.symbol();
-            return { address: tokenAddress, symbol };
+            return await fetchTokenDetails(tokenAddress, provider);
           })
         );
 
-        setTokens(tokenDetails);
+        setTokens(tokenDetails.filter(token => token.isValid));
       } catch (err) {
         console.error("Erro ao buscar tokens:", err);
         setError("Erro ao carregar tokens. Verifique sua conexão com a rede.");
@@ -114,12 +193,29 @@ export default function MyTokensPage() {
             {tokens.map((token, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-shadow"
+                className="bg-white p-6 rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-shadow cursor-pointer"
+                onClick={() => handleTokenClick(token.address)}
               >
-                <h3 className="text-xl font-semibold text-green-800">{token.symbol}</h3>
-                <p className="text-sm text-gray-600 mt-2 break-all">
-                  Endereço: {token.address}
-                </p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-xl font-semibold text-green-800">{token.symbol}</h3>
+                    <p className="text-sm text-gray-600">{token.name}</p>
+                  </div>
+                  {token.owner.toLowerCase() === address?.toLowerCase() && (
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                      Owner
+                    </span>
+                  )}
+                </div>
+                
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Supply:</span> {token.totalSupply}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2 break-all">
+                    {token.address}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

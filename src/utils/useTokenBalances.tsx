@@ -7,20 +7,26 @@ const ERC20_ABI = [
   "function balanceOf(address account) external view returns (uint256)"
 ];
 
-export interface TokenBalances {
-  anjux: string;
-  ethof: string;
-  usdcof: string;
+// Tipo dinâmico para os saldos dos tokens
+export type TokenBalances = {
+  [tokenKey: string]: string;
+} & {
   loading: boolean;
-}
+};
 
-export const useTokenBalances = (address?: string, chainId?: number) => {
-  const [balances, setBalances] = useState<TokenBalances>({
-    anjux: "0.000",
-    ethof: "0.000",
-    usdcof: "0.000",
-    loading: true,
-  });
+// Configuração dos tokens que queremos monitorar
+const SUPPORTED_TOKENS = ['anjux', 'ethof', 'usdcof']; // Adicione outros tokens aqui
+
+export const useTokenBalances = (address?: string, chainId?: number): TokenBalances => {
+  // Estado inicial dinâmico baseado nos tokens suportados
+  const initialState = SUPPORTED_TOKENS.reduce((acc, token) => {
+    acc[token] = "0.000";
+    return acc;
+  }, {} as Record<string, string>);
+  
+  initialState.loading = true;
+
+  const [balances, setBalances] = useState<TokenBalances>(initialState);
 
   useEffect(() => {
     if (!address || !chainId || !window.ethereum) {
@@ -35,32 +41,50 @@ export const useTokenBalances = (address?: string, chainId?: number) => {
         const currentChainId = Number(network.chainId.toString()) as ChainId;
 
         if (!TOKEN_ADDRESSES[currentChainId]) {
+          // Retorna "N/D" para todos os tokens suportados
+          const notAvailableState = SUPPORTED_TOKENS.reduce((acc, token) => {
+            acc[token] = "N/D";
+            return acc;
+          }, {} as Record<string, string>);
+          
           setBalances({
-            anjux: "N/D",
-            ethof: "N/D",
-            usdcof: "N/D",
+            ...notAvailableState,
             loading: false
           });
           return;
         }
 
         const tokens = TOKEN_ADDRESSES[currentChainId];
-        const contracts = {
-          anjux: new Contract(tokens.anjux, ERC20_ABI, provider),
-          ethof: new Contract(tokens.ethof, ERC20_ABI, provider),
-          usdcof: new Contract(tokens.usdcof, ERC20_ABI, provider)
-        };
+        
+        // Cria contratos dinamicamente para todos os tokens suportados
+        const contracts = SUPPORTED_TOKENS.reduce((acc, tokenKey) => {
+          if (tokens[tokenKey as keyof typeof tokens]) {
+            acc[tokenKey] = new Contract(
+              tokens[tokenKey as keyof typeof tokens],
+              ERC20_ABI,
+              provider
+            );
+          }
+          return acc;
+        }, {} as Record<string, Contract>);
 
-        const [anjuxBalance, ethofBalance, usdcofBalance] = await Promise.all([
-          contracts.anjux.balanceOf(address),
-          contracts.ethof.balanceOf(address),
-          contracts.usdcof.balanceOf(address)
-        ]);
+        // Busca todos os saldos em paralelo
+        const balancePromises = SUPPORTED_TOKENS.map(tokenKey => {
+          return contracts[tokenKey] 
+            ? contracts[tokenKey].balanceOf(address).catch(() => "0") 
+            : Promise.resolve("0");
+        });
+
+        const balanceResults = await Promise.all(balancePromises);
+
+        // Formata os resultados
+        const newBalances = SUPPORTED_TOKENS.reduce((acc, tokenKey, index) => {
+          acc[tokenKey] = Number(formatUnits(balanceResults[index], 18)).toFixed(3);
+          return acc;
+        }, {} as Record<string, string>);
 
         setBalances({
-          anjux: Number(formatUnits(anjuxBalance, 18)).toFixed(3),
-          ethof: Number(formatUnits(ethofBalance, 18)).toFixed(3),
-          usdcof: Number(formatUnits(usdcofBalance, 18)).toFixed(3),
+          ...newBalances,
           loading: false,
         });
       } catch (error) {

@@ -17,6 +17,7 @@ import RoadMapPage from './pages/roadmap';
 import { SeiWalletProvider } from '@sei-js/react';
 import CreateTokenPage from './pages/createTokenPage';
 import MyTokensPage from './pages/myTokensPage';
+import TokenConfigPage from './pages/tokensConfigPage';
 
 const COSMOS_CONFIG = {
   chainId: 'cosmoshub-4',
@@ -89,6 +90,9 @@ const router = createBrowserRouter([
   },{
     path: "/app/my-tokens",
     element: <MyTokensPage />,
+  },{
+    path: "/app/TokenConfig",
+    element: <TokenConfigPage />,
   },
 ]);
 
