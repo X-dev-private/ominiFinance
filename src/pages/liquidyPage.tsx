@@ -3,6 +3,7 @@ import Header from "../libs/header";
 import "../App.css";
 import LiquidityPoolTable from "../components/pool";
 import { useNetworkColor } from '../config/networkColorContext';
+import CommunityPoolTable from "../components/communityPool";
 
 export default function LiquidityPage() {
   const networkColor = useNetworkColor(); // Obtendo a cor da rede do contexto
@@ -12,6 +13,8 @@ export default function LiquidityPage() {
       <Header />
       <h2 className="text-2xl font-bold mb-4 text-white">LIQUIDITY POOL</h2>
       <LiquidityPoolTable />
+      <h2 className="text-2xl font-bold mb-4 text-white">LIQUIDITY POOL COMMUNITY</h2>
+      <CommunityPoolTable />
       <Footer />
     </div>
   );
