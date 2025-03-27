@@ -96,7 +96,7 @@ const Actives: React.FC = () => {
     <div className={`mx-auto ${networkColor} min-h-screen flex flex-col`}>
       <Header />
 
-      <div className="flex flex-col items-center justify-center flex-grow w-full px-6 mt-20 mb-20">
+      <div className="flex flex-col items-center justify-center flex-grow w-full px-6 mt-30 mb-20">
         <div className="w-full max-w-3xl bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-xl text-white text-center space-y-8">
           <h1 className="text-4xl font-bold drop-shadow-md">Faucet Tokens</h1>
 

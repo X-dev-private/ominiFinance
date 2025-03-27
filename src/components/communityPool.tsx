@@ -26,6 +26,8 @@ interface PoolData {
   TVL: string;
   apr: string;
   type: string;
+  userFeesA?: string; // Adicionado para armazenar as fees do usuário em tokenA
+  userFeesB?: string; // Adicionado para armazenar as fees do usuário em tokenB
 }
 
 const CommunityPoolTable: React.FC = () => {
@@ -107,6 +109,28 @@ const CommunityPoolTable: React.FC = () => {
               const reserveBNum = parseFloat(reserveBFormatted) || 0;
               const TVL = reserveANum + reserveBNum;
 
+              // 3.4 Obtém as fees disponíveis para o usuário (se conectado)
+              let userFeesA = "0";
+              let userFeesB = "0";
+              
+              if (address) {
+                try {
+                  const poolContract = new Contract(
+                    poolAddress,
+                    [
+                      "function getAvailableFees(address) view returns (uint256, uint256)"
+                    ],
+                    provider
+                  );
+                  
+                  const [feesA, feesB] = await poolContract.getAvailableFees(address);
+                  userFeesA = formatUnits(feesA, tokenAData.decimals);
+                  userFeesB = formatUnits(feesB, tokenBData.decimals);
+                } catch (err) {
+                  console.error(`Error fetching fees for pool ${poolAddress}:`, err);
+                }
+              }
+
               return {
                 address: poolAddress,
                 tokenA: tokenAData,
@@ -114,11 +138,13 @@ const CommunityPoolTable: React.FC = () => {
                 reserveA: reserveAFormatted,
                 reserveB: reserveBFormatted,
                 fee: feeString,
-                volume: `~$${(TVL * 0.2).toFixed(2)}`, // Volume estimado
-                fees: `~$${(TVL * 0.002).toFixed(2)}`, // Taxas estimadas
+                volume: `~$${(TVL * 0.2).toFixed(2)}`,
+                fees: `~$${(TVL * 0.002).toFixed(2)}`,
                 TVL: `~$${TVL.toFixed(2)}`,
-                apr: `${(Math.random() * 30 + 5).toFixed(2)}%`, // APR simulado
-                type: tokenAData.symbol === tokenBData.symbol ? "Stable" : "Volatile"
+                apr: `${(Math.random() * 30 + 5).toFixed(2)}%`,
+                type: tokenAData.symbol === tokenBData.symbol ? "Stable" : "Volatile",
+                userFeesA,
+                userFeesB
               };
             } catch (err) {
               console.error(`Error processing pool ${poolAddress}:`, err);
@@ -144,7 +170,7 @@ const CommunityPoolTable: React.FC = () => {
         address: tokenAddress,
         name,
         symbol,
-        totalSupply: formatUnits(totalSupply, 18), // Assumindo 18 decimais
+        totalSupply: formatUnits(totalSupply, 18),
         owner,
         isValid,
         decimals: 18
@@ -152,7 +178,7 @@ const CommunityPoolTable: React.FC = () => {
     };
 
     fetchAllData();
-  }, [chainData]);
+  }, [chainData, address]); // Adicionado address como dependência para recarregar quando o usuário conectar
 
   const handleDepositClick = (pool: PoolData) => {
     setSelectedPool({
@@ -191,6 +217,23 @@ const CommunityPoolTable: React.FC = () => {
 
       const tx = await poolContract.withdrawFees();
       await tx.wait();
+      
+      // Atualiza as fees após o saque
+      const updatedPools = await Promise.all(
+        pools.map(async (p) => {
+          if (p.address === pool.address) {
+            const [feesA, feesB] = await poolContract.getAvailableFees(address);
+            return {
+              ...p,
+              userFeesA: formatUnits(feesA, p.tokenA.decimals),
+              userFeesB: formatUnits(feesB, p.tokenB.decimals)
+            };
+          }
+          return p;
+        })
+      );
+      
+      setPools(updatedPools);
       alert('Fees withdrawn successfully!');
     } catch (error) {
       console.error('Error withdrawing fees:', error);
@@ -250,6 +293,12 @@ const CommunityPoolTable: React.FC = () => {
                   <span className="mr-2">💸</span>
                   Withdraw Fees
                 </button>
+                {/* Mostra as fees disponíveis apenas se houver alguma */}
+                {(pool.userFeesA !== "0" || pool.userFeesB !== "0") && (
+                  <div className="text-xs text-gray-600 mt-2">
+                    Your fees: {parseFloat(pool.userFeesA || "0").toFixed(6)} {pool.tokenA.symbol} / {parseFloat(pool.userFeesB || "0").toFixed(6)} {pool.tokenB.symbol}
+                  </div>
+                )}
               </div>
             </div>
           </div>

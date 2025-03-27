@@ -1,38 +1,38 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
-import { useChainId } from 'wagmi';
-import { getTokenAndPoolAddresses } from '../config/tokenAddresses';
 
-const ApproveModal = ({ selectedPool, onClose }) => {
-  const chainId = useChainId(); // Obtém o Chain ID da rede ativa
+interface ApproveModalProps {
+  selectedPool: {
+    name: string;
+    fromAddress: string;
+    toAddress: string;
+    poolAddress: string;
+    fromToken: string;
+    toToken: string;
+  } | null;
+  onClose: () => void;
+}
+
+const ApproveModal: React.FC<ApproveModalProps> = ({ selectedPool, onClose }) => {
   const [fromTokenAmount, setFromTokenAmount] = useState('');
   const [toTokenAmount, setToTokenAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [fromTokenApproved, setFromTokenApproved] = useState(false);
   const [toTokenApproved, setToTokenApproved] = useState(false);
 
-  // Obtém os endereços corretos com base no Chain ID
-  const poolData = getTokenAndPoolAddresses(chainId, selectedPool?.fromToken, selectedPool?.toToken);
-
-  if (!poolData) {
-    console.error(`Nenhuma configuração encontrada para chainId: ${chainId}`);
-  }
-
-  const { fromAddress, toAddress, poolAddress } = poolData || {};
-
   // Função para aprovar um token
-  const handleApprove = async (tokenAddress, tokenSymbol, amount) => {
+  const handleApprove = async (tokenAddress: string, tokenSymbol: string, amount: string) => {
     if (!window.ethereum) {
       alert('MetaMask não detectado!');
       return false;
     }
 
     if (!tokenAddress) {
-      alert(`Endereço do token ${tokenSymbol} não encontrado! Verifique o símbolo do token.`);
+      alert(`Endereço do token ${tokenSymbol} não encontrado!`);
       return false;
     }
 
-    if (!poolAddress) {
+    if (!selectedPool?.poolAddress) {
       alert('Endereço da Liquidity Pool não encontrado!');
       return false;
     }
@@ -46,7 +46,7 @@ const ApproveModal = ({ selectedPool, onClose }) => {
       const contract = new ethers.Contract(tokenAddress, erc20Abi, signer);
 
       const amountInWei = ethers.parseUnits(amount, 18);
-      const tx = await contract.approve(poolAddress, amountInWei);
+      const tx = await contract.approve(selectedPool.poolAddress, amountInWei);
       await tx.wait();
 
       alert(`Aprovação do token ${tokenSymbol} realizada com sucesso!`);
@@ -61,24 +61,32 @@ const ApproveModal = ({ selectedPool, onClose }) => {
   };
 
   const handleApproveFromToken = async () => {
-    if (!fromAddress) {
+    if (!selectedPool?.fromAddress) {
       alert('Endereço do token de origem não encontrado!');
       return;
     }
 
-    const success = await handleApprove(fromAddress, selectedPool?.fromToken, fromTokenAmount);
+    const success = await handleApprove(
+      selectedPool.fromAddress, 
+      selectedPool.fromToken, 
+      fromTokenAmount
+    );
     if (success) {
       setFromTokenApproved(true);
     }
   };
 
   const handleApproveToToken = async () => {
-    if (!toAddress) {
+    if (!selectedPool?.toAddress) {
       alert('Endereço do token de destino não encontrado!');
       return;
     }
 
-    const success = await handleApprove(toAddress, selectedPool?.toToken, toTokenAmount);
+    const success = await handleApprove(
+      selectedPool.toAddress, 
+      selectedPool.toToken, 
+      toTokenAmount
+    );
     if (success) {
       setToTokenApproved(true);
     }
@@ -91,7 +99,7 @@ const ApproveModal = ({ selectedPool, onClose }) => {
       return;
     }
 
-    if (!poolAddress) {
+    if (!selectedPool?.poolAddress) {
       alert("Endereço da pool não encontrado!");
       return;
     }
@@ -110,7 +118,7 @@ const ApproveModal = ({ selectedPool, onClose }) => {
       const poolAbi = [
         "function addLiquidity(uint256 amountA, uint256 amountB) external returns (uint256 shares)",
       ];
-      const poolContract = new ethers.Contract(poolAddress, poolAbi, signer);
+      const poolContract = new ethers.Contract(selectedPool.poolAddress, poolAbi, signer);
 
       const amountAInWei = ethers.parseUnits(fromTokenAmount, 18);
       const amountBInWei = ethers.parseUnits(toTokenAmount, 18);
@@ -127,18 +135,20 @@ const ApproveModal = ({ selectedPool, onClose }) => {
     }
   };
 
+  if (!selectedPool) return null;
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-[500px] relative">
         <h2 className="text-2xl font-bold text-green-700 mb-6">Deposit Liquidity</h2>
         <div className="space-y-6">
           <p className="text-lg font-semibold text-gray-700">
-            Pool: <span className="text-green-600">{selectedPool?.name}</span>
+            Pool: <span className="text-green-600">{selectedPool.name}</span>
           </p>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Quantidade de {selectedPool?.fromToken}:
+              Quantidade de {selectedPool.fromToken}:
             </label>
             <input
               type="text"
@@ -161,7 +171,7 @@ const ApproveModal = ({ selectedPool, onClose }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Quantidade de {selectedPool?.toToken}:
+              Quantidade de {selectedPool.toToken}:
             </label>
             <input
               type="text"

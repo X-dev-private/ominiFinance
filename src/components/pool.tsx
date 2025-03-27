@@ -1,16 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { BrowserProvider, Contract } from 'ethers';
+import { BrowserProvider, Contract, formatUnits } from 'ethers';
 import { getTokenAndPoolAddresses } from '../config/tokenAddresses';
 import ApproveModal from './ApproveModal';
 
-// ABI da função withdrawFees
-const withdrawFeesABI = [
+// ABI da função withdrawFees e getAvailableFees
+const poolABI = [
   {
     "inputs": [],
     "name": "withdrawFees",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getAvailableFees",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountA",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountB",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ];
@@ -25,10 +49,12 @@ interface Pool {
   TVL: string;
   apr: string;
   tokens: [string, string];
+  userFeesA?: string; // Adicionado para armazenar as fees do usuário em tokenA
+  userFeesB?: string; // Adicionado para armazenar as fees do usuário em tokenB
 }
 
 // Dados das pools de liquidez
-const pools: Pool[] = [
+const initialPools: Pool[] = [
   {
     name: 'usdcof/ethof',
     type: 'Basic Stable',
@@ -62,7 +88,11 @@ const pools: Pool[] = [
 ];
 
 // Componente para cada linha da tabela de pools
-const PoolRow: React.FC<{ pool: Pool; onDepositClick: (pool: Pool) => void; onWithdrawFees: (pool: Pool) => void }> = ({ pool, onDepositClick, onWithdrawFees }) => {
+const PoolRow: React.FC<{ 
+  pool: Pool; 
+  onDepositClick: (pool: Pool) => void; 
+  onWithdrawFees: (pool: Pool) => void 
+}> = ({ pool, onDepositClick, onWithdrawFees }) => {
   return (
     <div className="rounded-2xl border border-green-300 shadow-lg p-6 bg-gradient-to-br from-white to-green-50 hover:shadow-xl transition-shadow duration-300">
       <div className="flex items-center mb-4">
@@ -102,6 +132,12 @@ const PoolRow: React.FC<{ pool: Pool; onDepositClick: (pool: Pool) => void; onWi
             <span className="mr-2">💸</span>
             Withdraw Fees
           </button>
+          {/* Mostra as fees disponíveis apenas se houver alguma */}
+          {(pool.userFeesA !== "0" || pool.userFeesB !== "0") && (
+            <div className="text-xs text-gray-600 mt-2">
+              Your fees: {parseFloat(pool.userFeesA || "0").toFixed(6)} {pool.tokens[0]} / {parseFloat(pool.userFeesB || "0").toFixed(6)} {pool.tokens[1]}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -119,7 +155,43 @@ const LiquidityPoolTable: React.FC = () => {
     fromToken: string;
     toToken: string;
   } | null>(null);
+  const [pools, setPools] = useState<Pool[]>(initialPools);
   const { address } = useAccount(); // Obtém o endereço do usuário
+
+  // Efeito para carregar as fees disponíveis quando o endereço muda
+  useEffect(() => {
+    const fetchUserFees = async () => {
+      if (!address) return;
+
+      const updatedPools = await Promise.all(
+        initialPools.map(async (pool) => {
+          const chainId = 57054; // Defina a chainId desejada
+          const [token1, token2] = pool.tokens;
+
+          try {
+            const { poolAddress } = getTokenAndPoolAddresses(chainId, token1, token2);
+            const provider = new BrowserProvider(window.ethereum);
+            const contract = new Contract(poolAddress, poolABI, provider);
+
+            const [feesA, feesB] = await contract.getAvailableFees(address);
+            
+            return {
+              ...pool,
+              userFeesA: formatUnits(feesA, 18), // Assumindo 18 decimais
+              userFeesB: formatUnits(feesB, 18)  // Assumindo 18 decimais
+            };
+          } catch (error) {
+            console.error(`Error fetching fees for pool ${pool.name}:`, error);
+            return pool;
+          }
+        })
+      );
+
+      setPools(updatedPools);
+    };
+
+    fetchUserFees();
+  }, [address]);
 
   // Função para lidar com o clique no botão "Deposit"
   const handleDepositClick = (pool: Pool) => {
@@ -167,11 +239,26 @@ const LiquidityPoolTable: React.FC = () => {
       // Conecta ao contrato usando o BrowserProvider
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      const contract = new Contract(poolAddress, withdrawFeesABI, signer);
+      const contract = new Contract(poolAddress, poolABI, signer);
 
       // Chama a função withdrawFees
       const tx = await contract.withdrawFees();
       await tx.wait();
+      
+      // Atualiza as fees após o saque
+      const [newFeesA, newFeesB] = await contract.getAvailableFees(address);
+      const updatedPools = pools.map(p => {
+        if (p.name === pool.name) {
+          return {
+            ...p,
+            userFeesA: formatUnits(newFeesA, 18),
+            userFeesB: formatUnits(newFeesB, 18)
+          };
+        }
+        return p;
+      });
+
+      setPools(updatedPools);
       alert('Fees withdrawn successfully!');
     } catch (error) {
       console.error('Error withdrawing fees:', error);
