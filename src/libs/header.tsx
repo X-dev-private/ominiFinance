@@ -51,7 +51,12 @@ export default function Header() {
             hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50">
           Dashboard
         </a>
-
+        <a
+          href="/app/ramp"
+          className="px-5 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg 
+            hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50">
+          add found
+        </a>
         {/* Botão Portfolio */}
         <a
           href="/app/portfolio"

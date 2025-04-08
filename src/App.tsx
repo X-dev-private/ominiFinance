@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { projectId, metadata, networks, wagmiAdapter } from './config';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { NetworkColorProvider } from './config/networkColorContext';
+import { MoonPayProvider } from '@moonpay/moonpay-react';
+
 import Actives from './pages/activespage';
 import Home from './pages/home';
 import LiquidityPage from './pages/liquidyPage';
@@ -19,6 +21,7 @@ import CreateTokenPage from './pages/createTokenPage';
 import MyTokensPage from './pages/myTokensPage';
 import TokenConfigPage from './pages/tokensConfigPage';
 import CreatePool from './pages/createPool';
+import Ramp from './pages/Ramp';
 
 const COSMOS_CONFIG = {
   chainId: 'cosmoshub-4',
@@ -98,6 +101,10 @@ const router = createBrowserRouter([
     path: "/app/create-pool",
     element: <CreatePool />,
   },
+  {
+    path: "/app/ramp",
+    element: <Ramp />,
+  },
 ]);
 
 const App: React.FC = () => {
@@ -110,10 +117,15 @@ const App: React.FC = () => {
           autoconnect={false}
         >
         <QueryClientProvider client={queryClient}>
+        <MoonPayProvider
+            apiKey="pk_test_3aE0ajRGrcEkEyiRB1nb7ethJViOfVs"
+            debug
+        >
           <NetworkColorProvider> 
           <SpeedInsights />
             <RouterProvider router={router} />
           </NetworkColorProvider>
+          </MoonPayProvider>
         </QueryClientProvider>
         </SeiWalletProvider>
       </WagmiProvider>

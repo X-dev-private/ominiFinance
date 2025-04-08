@@ -15,6 +15,8 @@
     "@cosmjs/stargate": "^0.33.0",
     "@debridge-finance/desdk": "^1.0.2",
     "@keplr-wallet/types": "^0.12.196",
+    "@moonpay/moonpay-js": "^0.6.6",
+    "@moonpay/moonpay-react": "^1.8.10",
     "@reown/appkit": "1.6.8",
     "@reown/appkit-adapter-wagmi": "1.6.8",
     "@sei-js/react": "^3.2.0",
