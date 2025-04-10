@@ -1,35 +1,8 @@
-// components/managerPool.tsx
+// components/ManagerPool.tsx
 import React, { useState, useEffect } from 'react';
-import { useAccount, useChainId } from 'wagmi';
-import { BrowserProvider, Contract, formatUnits } from 'ethers';
-import { TOKEN_ADDRESSES } from '../config/tokenAddresses';
+import { useAccount } from 'wagmi';
+import { useCommunityPools } from '../utils/useCommunityPools';
 import ApproveModal from './ApproveModal';
-
-interface TokenData {
-  address: string;
-  name: string;
-  symbol: string;
-  totalSupply: string;
-  owner: string;
-  isValid: boolean;
-  decimals: number;
-}
-
-interface PoolData {
-  address: string;
-  tokenA: TokenData;
-  tokenB: TokenData;
-  reserveA: string;
-  reserveB: string;
-  fee: string;
-  volume: string;
-  fees: string;
-  TVL: string;
-  apr: string;
-  type: string;
-  userFeesA?: string;
-  userFeesB?: string;
-}
 
 interface ManagerPoolProps {
   tokenAddress: string;
@@ -38,12 +11,6 @@ interface ManagerPoolProps {
 
 const ManagerPool: React.FC<ManagerPoolProps> = ({ tokenAddress, tokenSymbol }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [pools, setPools] = useState<PoolData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { address } = useAccount();
-  const chainId = useChainId();
-  const chainData = TOKEN_ADDRESSES[chainId as keyof typeof TOKEN_ADDRESSES];
   const [selectedPool, setSelectedPool] = useState<{
     name: string;
     fromAddress: string;
@@ -52,138 +19,21 @@ const ManagerPool: React.FC<ManagerPoolProps> = ({ tokenAddress, tokenSymbol }) 
     fromToken: string;
     toToken: string;
   } | null>(null);
+  
+  const { address } = useAccount();
+  const {
+    pools,
+    loading,
+    error,
+    handleWithdrawFees,
+    fetchPoolsByToken
+  } = useCommunityPools();
 
   useEffect(() => {
-    const fetchAllData = async () => {
-      if (!chainData?.dexFactory || !chainData?.tokenFactory) {
-        setError("Unsupported network");
-        setLoading(false);
-        return;
-      }
+    fetchPoolsByToken(tokenAddress);
+  }, [fetchPoolsByToken, tokenAddress]);
 
-      try {
-        const provider = new BrowserProvider(window.ethereum);
-        
-        // 1. Inicializa os contratos
-        const poolFactory = new Contract(
-          chainData.dexFactory,
-          [
-            "function getPoolsByToken(address) view returns (address[] memory)",
-            "function getPoolData(address) view returns (address,address,uint256,uint256,uint256,uint256,uint256,address)"
-          ],
-          provider
-        );
-
-        const tokenFactory = new Contract(
-          chainData.tokenFactory,
-          [
-            "function getTokenByAddress(address) view returns (string,string,uint256,address,bool)"
-          ],
-          provider
-        );
-
-        // 2. Busca pools para o token específico
-        const poolAddresses = await poolFactory.getPoolsByToken(tokenAddress);
-        await processPools(poolAddresses, poolFactory, tokenFactory);
-
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to load pool data. Please try again.");
-        setLoading(false);
-      }
-    };
-
-    // Função para processar as pools
-    const processPools = async (poolAddresses: string[], poolFactory: Contract, tokenFactory: Contract) => {
-      const processedPools = await Promise.all(
-        poolAddresses.map(async (poolAddress: string) => {
-          try {
-            const [
-              tokenA, 
-              tokenB, 
-              reserveA, 
-              reserveB, 
-              feeNumerator, 
-              feeDenominator
-            ] = await poolFactory.getPoolData(poolAddress);
-
-            const [tokenAData, tokenBData] = await Promise.all([
-              getTokenData(tokenFactory, tokenA),
-              getTokenData(tokenFactory, tokenB)
-            ]);
-
-            const feePercentage = (Number(feeNumerator) / Number(feeDenominator)) * 100;
-            const feeString = feePercentage.toFixed(2) + '%';
-
-            const reserveAFormatted = formatUnits(reserveA, tokenAData.decimals);
-            const reserveBFormatted = formatUnits(reserveB, tokenBData.decimals);
-            const reserveANum = parseFloat(reserveAFormatted) || 0;
-            const reserveBNum = parseFloat(reserveBFormatted) || 0;
-            const TVL = reserveANum + reserveBNum;
-
-            let userFeesA = "0";
-            let userFeesB = "0";
-            
-            if (address) {
-              try {
-                const poolContract = new Contract(
-                  poolAddress,
-                  ["function getAvailableFees(address) view returns (uint256, uint256)"],
-                  poolFactory.provider
-                );
-                
-                const [feesA, feesB] = await poolContract.getAvailableFees(address);
-                userFeesA = formatUnits(feesA, tokenAData.decimals);
-                userFeesB = formatUnits(feesB, tokenBData.decimals);
-              } catch (err) {
-                console.error(`Error fetching fees for pool ${poolAddress}:`, err);
-              }
-            }
-
-            return {
-              address: poolAddress,
-              tokenA: tokenAData,
-              tokenB: tokenBData,
-              reserveA: reserveAFormatted,
-              reserveB: reserveBFormatted,
-              fee: feeString,
-              volume: `~$${(TVL * 0.2).toFixed(2)}`,
-              fees: `~$${(TVL * 0.002).toFixed(2)}`,
-              TVL: `~$${TVL.toFixed(2)}`,
-              apr: `${(Math.random() * 30 + 5).toFixed(2)}%`,
-              type: tokenAData.symbol === tokenBData.symbol ? "Stable" : "Volatile",
-              userFeesA,
-              userFeesB
-            };
-          } catch (err) {
-            console.error(`Error processing pool ${poolAddress}:`, err);
-            return null;
-          }
-        })
-      );
-
-      setPools(processedPools.filter(Boolean) as PoolData[]);
-    };
-
-    // Função auxiliar para obter dados completos de um token
-    const getTokenData = async (tokenFactory: Contract, tokenAddress: string): Promise<TokenData> => {
-      const [name, symbol, totalSupply, owner, isValid] = await tokenFactory.getTokenByAddress(tokenAddress);
-      return {
-        address: tokenAddress,
-        name,
-        symbol,
-        totalSupply: formatUnits(totalSupply, 18),
-        owner,
-        isValid,
-        decimals: 18
-      };
-    };
-
-    fetchAllData();
-  }, [chainData, address, tokenAddress]);
-
-  const handleDepositClick = (pool: PoolData) => {
+  const handleDepositClick = (pool: any) => {
     setSelectedPool({
       name: `${pool.tokenA.symbol}/${pool.tokenB.symbol}`,
       fromAddress: pool.tokenA.address,
@@ -193,52 +43,6 @@ const ManagerPool: React.FC<ManagerPoolProps> = ({ tokenAddress, tokenSymbol }) 
       toToken: pool.tokenB.symbol
     });
     setIsModalOpen(true);
-  };
-
-  const handleWithdrawFees = async (pool: PoolData) => {
-    if (!address || !window.ethereum) {
-      alert('Please connect your wallet.');
-      return;
-    }
-
-    try {
-      const provider = new BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const poolContract = new Contract(
-        pool.address,
-        [{
-          "inputs": [],
-          "name": "withdrawFees",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        }],
-        signer
-      );
-
-      const tx = await poolContract.withdrawFees();
-      await tx.wait();
-      
-      const updatedPools = await Promise.all(
-        pools.map(async (p) => {
-          if (p.address === pool.address) {
-            const [feesA, feesB] = await poolContract.getAvailableFees(address);
-            return {
-              ...p,
-              userFeesA: formatUnits(feesA, p.tokenA.decimals),
-              userFeesB: formatUnits(feesB, p.tokenB.decimals)
-            };
-          }
-          return p;
-        })
-      );
-      
-      setPools(updatedPools);
-      alert('Fees withdrawn successfully!');
-    } catch (error) {
-      console.error('Error withdrawing fees:', error);
-      alert('Failed to withdraw fees.');
-    }
   };
 
   if (loading) {

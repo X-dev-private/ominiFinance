@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { ethers } from "ethers";
 import { TOKEN_ADDRESSES } from "../config/tokenAddresses";
@@ -8,46 +8,55 @@ import "../App.css";
 import { useNetworkColor } from '../config/networkColorContext';
 import { useNavigate } from "react-router-dom";
 
+interface TokenDetails {
+  address: string;
+  name: string;
+  symbol: string;
+  totalSupply: string;
+  owner: string;
+  isValid: boolean;
+  decimals: number;
+}
+
 export default function MyTokensPage() {
   const { address } = useAccount();
   const chainId = useChainId();
   const networkColor = useNetworkColor();
-  const [tokens, setTokens] = useState([]);
+  const [tokens, setTokens] = useState<TokenDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const chainData = TOKEN_ADDRESSES[chainId as keyof typeof TOKEN_ADDRESSES];
 
-  // Função para formatar o supply com decimais e separadores de milhar
-  const formatTokenSupply = (supply: bigint, decimals = 18): string => {
+  // ABI do TokenFactory com a função getTokenByOwner
+  const TOKEN_FACTORY_ABI = [
+    "function getTokenByOwner(address owner) view returns (address[] memory)",
+    "function getTokenByAddress(address tokenAddress) view returns (string memory, string memory, uint256, address, bool)"
+  ];
+
+  // ABI padrão ERC20 para buscar decimais
+  const ERC20_ABI = [
+    "function decimals() view returns (uint8)"
+  ];
+
+  const formatTokenSupply = useCallback((supply: bigint, decimals = 18): string => {
     try {
-      // Converte para número com casas decimais
       const formatted = ethers.formatUnits(supply, decimals);
-      const numberValue = Number(formatted);
-      
-      // Formata com separadores de milhar e 3 casas decimais
-      return numberValue.toLocaleString('pt-BR', {
+      return Number(formatted).toLocaleString('pt-BR', {
         minimumFractionDigits: 3,
         maximumFractionDigits: 3
       });
     } catch {
       return "0,000";
     }
-  };
+  }, []);
 
-  // Função para buscar informações completas do token
-  const fetchTokenDetails = async (tokenAddress: string, provider: ethers.BrowserProvider) => {
+  const fetchTokenDetails = useCallback(async (tokenAddress: string, provider: ethers.BrowserProvider): Promise<TokenDetails> => {
     try {
-      const TOKEN_FACTORY_ABI = [
-        `function getTokenByAddress(address tokenAddress) external view returns (
-          string memory name,
-          string memory symbol,
-          uint256 totalSupply,
-          address owner,
-          bool isValid
-        )`
-      ];
+      if (!chainData?.tokenFactory) {
+        throw new Error("Token factory address not defined");
+      }
 
       const tokenFactory = new ethers.Contract(
         chainData.tokenFactory,
@@ -55,20 +64,29 @@ export default function MyTokensPage() {
         provider
       );
 
+      // Usa getTokenByAddress do factory para obter informações básicas
       const [name, symbol, totalSupply, owner, isValid] = 
         await tokenFactory.getTokenByAddress(tokenAddress);
 
-      // Busca decimais separadamente
+      if (!isValid) {
+        return {
+          address: tokenAddress,
+          name: "Invalid Token",
+          symbol: "INV",
+          totalSupply: "0,000",
+          owner: ethers.ZeroAddress,
+          isValid: false,
+          decimals: 18
+        };
+      }
+
+      // Busca decimais diretamente do token
       let decimals = 18;
       try {
-        const tokenContract = new ethers.Contract(
-          tokenAddress,
-          ["function decimals() view returns (uint8)"],
-          provider
-        );
+        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
         decimals = await tokenContract.decimals();
       } catch {
-        console.log("Using default decimals (18)");
+        console.warn(`Using default decimals for ${tokenAddress}`);
       }
 
       return {
@@ -81,61 +99,91 @@ export default function MyTokensPage() {
         decimals
       };
     } catch (err) {
-      console.error("Error fetching token details:", err);
+      console.error(`Error fetching details for token ${tokenAddress}:`, err);
       return {
         address: tokenAddress,
         name: "Error",
         symbol: "ERR",
         totalSupply: "0,000",
-        owner: address,
+        owner: ethers.ZeroAddress,
         isValid: false,
         decimals: 18
       };
     }
-  };
+  }, [chainData, formatTokenSupply]);
 
-  // Função para lidar com o clique no token
+  const fetchTokens = useCallback(async () => {
+    if (!address || !chainData?.tokenFactory) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      
+      // Verifica se o contrato factory existe
+      const code = await provider.getCode(chainData.tokenFactory);
+      if (code === '0x') {
+        throw new Error("Token factory contract not deployed");
+      }
+
+      const tokenFactory = new ethers.Contract(
+        chainData.tokenFactory,
+        TOKEN_FACTORY_ABI,
+        provider
+      );
+
+      console.log("Fetching tokens for owner:", address);
+      
+      // Usa getTokenByOwner para obter os tokens do usuário
+      const tokenAddresses = await tokenFactory.getTokenByOwner(address);
+      console.log("Token addresses found:", tokenAddresses);
+
+      if (!tokenAddresses || tokenAddresses.length === 0) {
+        setTokens([]);
+        return;
+      }
+
+      // Processa os detalhes dos tokens em paralelo
+      const tokenDetails = await Promise.all(
+        tokenAddresses.map(address => 
+          fetchTokenDetails(address, provider))
+      );
+
+      // Filtra apenas tokens válidos
+      const validTokens = tokenDetails.filter(token => token.isValid);
+      console.log("Valid tokens:", validTokens);
+      
+      setTokens(validTokens);
+    } catch (err) {
+      console.error("Error fetching tokens:", err);
+      setError("Erro ao carregar tokens. Verifique sua conexão com a rede.");
+    } finally {
+      setLoading(false);
+    }
+  }, [address, chainData, fetchTokenDetails]);
+
+  useEffect(() => {
+    fetchTokens();
+
+    const handleAccountsChanged = () => {
+      console.log("Account changed - refreshing tokens...");
+      fetchTokens();
+    };
+
+    window.ethereum?.on('accountsChanged', handleAccountsChanged);
+
+    return () => {
+      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
+    };
+  }, [fetchTokens]);
+
   const handleTokenClick = (tokenAddress: string) => {
     navigate(`/app/TokenConfig`, { state: { tokenAddress } });
   };
-
-  useEffect(() => {
-    if (!address || !chainData?.tokenFactory) return;
-
-    const fetchTokens = async () => {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-
-        const TOKEN_FACTORY_ABI = [
-          "function getTokensByOwner(address owner) external view returns (address[] memory)"
-        ];
-
-        const tokenFactory = new ethers.Contract(
-          chainData.tokenFactory,
-          TOKEN_FACTORY_ABI,
-          signer
-        );
-
-        const tokenAddresses = await tokenFactory.getTokensByOwner(address);
-
-        const tokenDetails = await Promise.all(
-          tokenAddresses.map(async (tokenAddress) => {
-            return await fetchTokenDetails(tokenAddress, provider);
-          })
-        );
-
-        setTokens(tokenDetails.filter(token => token.isValid));
-      } catch (err) {
-        console.error("Erro ao buscar tokens:", err);
-        setError("Erro ao carregar tokens. Verifique sua conexão com a rede.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTokens();
-  }, [address, chainData]);
 
   if (!chainData) {
     return (

@@ -1,5 +1,5 @@
 // src/hooks/useTokenBalances.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BrowserProvider, Contract, formatUnits } from "ethers";
 import { TOKEN_ADDRESSES, ChainId } from "../config/tokenAddresses";
 
@@ -8,79 +8,86 @@ const ERC20_ABI = [
 ];
 
 const TOKEN_FACTORY_ABI = [
-  "function getTokensByOwner(address owner) external view returns (address[] memory)",
-  "function getTokenByAddress(address tokenAddress) external view returns (string, string, uint256, address, bool)"
+  "function getTokenByOwner(address owner) external view returns (address[] memory)",
+  "function getTokenByAddress(address tokenAddress) external view returns (string memory, string memory, uint256, address, bool)"
 ];
 
-export type TokenBalances = {
+export interface TokenBalance {
+  symbol: string;
+  balance: string;
+}
+
+export interface TokenBalances {
   [tokenKey: string]: string;
-} & {
   loading: boolean;
   customTokens?: {
-    [address: string]: {
-      symbol: string;
-      balance: string;
-    }
-  }
-};
+    [address: string]: TokenBalance;
+  };
+}
 
-const SUPPORTED_TOKENS = ['anjux', 'ethof', 'usdcof'];
+const SUPPORTED_TOKENS = ['anjux', 'ethof', 'usdcof'] as const;
 
 export const useTokenBalances = (address?: string, chainId?: number): TokenBalances => {
-  const initialState = SUPPORTED_TOKENS.reduce((acc, token) => {
-    acc[token] = "0.000";
-    return acc;
-  }, {} as Record<string, string>);
-  
-  initialState.loading = true;
+  const [balances, setBalances] = useState<TokenBalances>(() => {
+    const initialState = SUPPORTED_TOKENS.reduce((acc, token) => {
+      acc[token] = "0.000";
+      return acc;
+    }, {} as Record<string, string>);
+    
+    return {
+      ...initialState,
+      loading: true
+    };
+  });
 
-  const [balances, setBalances] = useState<TokenBalances>(initialState);
-
-  useEffect(() => {
+  const fetchBalances = useCallback(async () => {
     if (!address || !chainId || !window.ethereum) {
       setBalances(prev => ({ ...prev, loading: false }));
       return;
     }
 
-    const fetchBalances = async () => {
-      try {
-        const provider = new BrowserProvider(window.ethereum);
-        const network = await provider.getNetwork();
-        const currentChainId = Number(network.chainId.toString()) as ChainId;
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
+      const currentChainId = Number(network.chainId) as ChainId;
 
-        if (!TOKEN_ADDRESSES[currentChainId]) {
-          const notAvailableState = SUPPORTED_TOKENS.reduce((acc, token) => {
-            acc[token] = "N/D";
-            return acc;
-          }, {} as Record<string, string>);
-          
-          setBalances({
-            ...notAvailableState,
-            loading: false
-          });
-          return;
-        }
-
-        const tokens = TOKEN_ADDRESSES[currentChainId];
-        const tokenFactoryAddress = tokens.tokenFactory;
+      if (!TOKEN_ADDRESSES[currentChainId]) {
+        const notAvailableState = SUPPORTED_TOKENS.reduce((acc, token) => {
+          acc[token] = "N/A";
+          return acc;
+        }, {} as Record<string, string>);
         
-        if (!tokenFactoryAddress) {
-          throw new Error("Token factory address not found");
-        }
+        setBalances({
+          ...notAvailableState,
+          loading: false
+        });
+        return;
+      }
 
-        const tokenFactory = new Contract(
-          tokenFactoryAddress,
-          TOKEN_FACTORY_ABI,
-          provider
-        );
+      const tokens = TOKEN_ADDRESSES[currentChainId];
+      const tokenFactoryAddress = tokens.tokenFactory;
+      
+      if (!tokenFactoryAddress) {
+        throw new Error("Token factory address not found");
+      }
 
-        // 1. Busca todos os tokens do usuário
-        const userTokenAddresses = await tokenFactory.getTokensByOwner(address);
-        
-        // 2. Busca informações dos tokens customizados
-        const customTokensInfo = await Promise.all(
-          userTokenAddresses.map(async (tokenAddress: string) => {
-            const [name, symbol] = await tokenFactory.getTokenByAddress(tokenAddress);
+      const tokenFactory = new Contract(
+        tokenFactoryAddress,
+        TOKEN_FACTORY_ABI,
+        provider
+      );
+
+      // 1. Get user's custom tokens
+      const userTokenAddresses = await tokenFactory.getTokenByOwner(address);
+      
+      // 2. Get custom tokens info
+      const customTokensInfo = await Promise.all(
+        userTokenAddresses.map(async (tokenAddress: string) => {
+          try {
+            const [, symbol, , , isValid] = await tokenFactory.getTokenByAddress(tokenAddress);
+            if (!isValid) {
+              return null;
+            }
             const tokenContract = new Contract(tokenAddress, ERC20_ABI, provider);
             const balance = await tokenContract.balanceOf(address);
             return {
@@ -88,64 +95,77 @@ export const useTokenBalances = (address?: string, chainId?: number): TokenBalan
               symbol,
               balance: formatUnits(balance, 18)
             };
-          })
-        );
+          } catch (error) {
+            console.error(`Error fetching token ${tokenAddress}:`, error);
+            return null;
+          }
+        })
+      );
 
-        // 3. Converte para o formato de customTokens
-        const customTokens = customTokensInfo.reduce((acc, token) => {
+      // 3. Format custom tokens (filter out null values)
+      const customTokens = customTokensInfo.reduce((acc, token) => {
+        if (token) {
           acc[token.address] = {
             symbol: token.symbol,
-            balance: Number(token.balance).toFixed(3)
+            balance: parseFloat(token.balance).toFixed(3)
           };
-          return acc;
-        }, {} as Record<string, { symbol: string; balance: string }>);
+        }
+        return acc;
+      }, {} as Record<string, TokenBalance>);
 
-        // 4. Busca saldos dos tokens padrão (SUPPORTED_TOKENS)
-        const standardTokenContracts = SUPPORTED_TOKENS.reduce((acc, tokenKey) => {
-          if (tokens[tokenKey as keyof typeof tokens]) {
-            acc[tokenKey] = new Contract(
-              tokens[tokenKey as keyof typeof tokens],
-              ERC20_ABI,
-              provider
-            );
-          }
-          return acc;
-        }, {} as Record<string, Contract>);
+      // 4. Get standard token balances
+      const standardTokenContracts = SUPPORTED_TOKENS.reduce((acc, tokenKey) => {
+        const tokenAddress = tokens[tokenKey as keyof typeof tokens];
+        if (tokenAddress) {
+          acc[tokenKey] = new Contract(
+            tokenAddress,
+            ERC20_ABI,
+            provider
+          );
+        }
+        return acc;
+      }, {} as Record<string, Contract>);
 
-        const standardBalancePromises = SUPPORTED_TOKENS.map(tokenKey => {
-          return standardTokenContracts[tokenKey] 
-            ? standardTokenContracts[tokenKey].balanceOf(address).catch(() => "0") 
-            : Promise.resolve("0");
-        });
+      const standardBalanceResults = await Promise.all(
+        SUPPORTED_TOKENS.map(tokenKey => 
+          standardTokenContracts[tokenKey]?.balanceOf(address).catch(() => "0") ?? Promise.resolve("0")
+        )
+      );
 
-        const standardBalanceResults = await Promise.all(standardBalancePromises);
+      const standardBalances = SUPPORTED_TOKENS.reduce((acc, tokenKey, index) => {
+        acc[tokenKey] = parseFloat(formatUnits(standardBalanceResults[index], 18)).toFixed(3);
+        return acc;
+      }, {} as Record<string, string>);
 
-        const standardBalances = SUPPORTED_TOKENS.reduce((acc, tokenKey, index) => {
-          acc[tokenKey] = Number(formatUnits(standardBalanceResults[index], 18)).toFixed(3);
-          return acc;
-        }, {} as Record<string, string>);
+      setBalances({
+        ...standardBalances,
+        customTokens,
+        loading: false,
+      });
 
-        setBalances({
-          ...standardBalances,
-          customTokens,
-          loading: false,
-        });
+    } catch (error) {
+      console.error("Error fetching balances:", error);
+      setBalances(prev => ({ 
+        ...prev, 
+        loading: false 
+      }));
+    }
+  }, [address, chainId]);
 
-      } catch (error) {
-        console.error("Erro ao buscar saldos:", error);
-        setBalances(prev => ({ ...prev, loading: false }));
-      }
-    };
-
+  useEffect(() => {
     fetchBalances();
 
     const handleChainChanged = () => fetchBalances();
-    window.ethereum.on('chainChanged', handleChainChanged);
+    const ethereum = window.ethereum;
     
-    return () => {
-      window.ethereum.removeListener('chainChanged', handleChainChanged);
-    };
-  }, [address, chainId]);
+    if (ethereum) {
+      ethereum.on('chainChanged', handleChainChanged);
+      
+      return () => {
+        ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, [fetchBalances]);
 
   return balances;
 };

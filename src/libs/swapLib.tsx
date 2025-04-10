@@ -28,7 +28,6 @@ const TokenSwap: React.FC<TokenSwapProps> = ({ amount, setAmount, setFromToken, 
     ]);
   }, [anjux, ethof, usdcof]);
 
-  // Inicializa os tokens padrão
   const [fromToken, setLocalFromToken] = useState(tokens[0]);
   const [toToken, setLocalToToken] = useState(tokens[1]);
 

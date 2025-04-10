@@ -5,12 +5,12 @@ import Logo from '../assets/Logo.png';
 import { WalletConnector } from '../components/WalletConnector';
 
 export default function Header() {
-  const { isConnected } = useAccount(); // Estado da carteira EVM
-  const { connectedWallet } = useWallet(); // Estado da carteira Cosmos
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isConnected } = useAccount();
+  const { connectedWallet } = useWallet();
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isDeFiOpen, setIsDeFiOpen] = useState(false);
+  const [isTokensOpen, setIsTokensOpen] = useState(false);
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
-  const [isDeFiOpen, setIsDeFiOpen] = useState(false); // Estado para o menu DeFi
-  const [isTokensOpen, setIsTokensOpen] = useState(false); // Estado para o menu Tokens
 
   useEffect(() => {
     if (isConnected) {
@@ -22,19 +22,22 @@ export default function Header() {
     }
   }, [isConnected, connectedWallet]);
 
-  const handleChainSelection = (chain: string) => {
-    setSelectedChain(chain);
-    setIsModalOpen(false);
+  const toggleAccountMenu = () => {
+    setIsAccountOpen(!isAccountOpen);
+    setIsDeFiOpen(false);
+    setIsTokensOpen(false);
   };
 
   const toggleDeFiMenu = () => {
     setIsDeFiOpen(!isDeFiOpen);
-    setIsTokensOpen(false); // Fecha o menu Tokens se estiver aberto
+    setIsTokensOpen(false);
+    setIsAccountOpen(false);
   };
 
   const toggleTokensMenu = () => {
     setIsTokensOpen(!isTokensOpen);
-    setIsDeFiOpen(false); // Fecha o menu DeFi se estiver aberto
+    setIsDeFiOpen(false);
+    setIsAccountOpen(false);
   };
 
   return (
@@ -44,47 +47,46 @@ export default function Header() {
       </div>
 
       <div className="w-3/5 flex gap-4 items-center justify-center">
-        {/* Botão Dashboard */}
+        {/* Dashboard Button */}
         <a
           href="/app/dashboard"
-          className="px-5 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg 
-            hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50">
+          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+        >
           Dashboard
         </a>
+
+        {/* Add Funds Button */}
         <a
           href="/app/ramp"
-          className="px-5 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg 
-            hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50">
-          add found
+          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+        >
+          buy tokens
         </a>
-        {/* Botão Portfolio */}
+
+        {/* Portfolio Button */}
         <a
           href="/app/portfolio"
-          className="px-5 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg 
-            hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50">
+          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+        >
           Portfolio
         </a>
 
-        {/* Menu Suspenso para DeFi (Swap, Liquidity, Bridge) */}
-        <div className="relative group">
+        {/* DeFi Dropdown */}
+        <div className="relative">
           <button
             onClick={toggleDeFiMenu}
-            onMouseEnter={() => setIsDeFiOpen(true)}
-            onMouseLeave={() => !isDeFiOpen && setIsDeFiOpen(false)}
-            className="px-5 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg 
-              hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50">
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
             DeFi
           </button>
-          {(isDeFiOpen || isDeFiOpen) && (
-            <div
-              className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20"
-              onMouseEnter={() => setIsDeFiOpen(true)}
-              onMouseLeave={() => setIsDeFiOpen(false)}>
-              {['Swap', 'Liquidity'].map((item, index) => (
+          {isDeFiOpen && (
+            <div className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 py-1 z-10">
+              {['Swap', 'Liquidity'].map((item) => (
                 <a
-                  key={index}
+                  key={item}
                   href={`/app/${item.toLowerCase()}`}
-                  className="block px-6 py-3 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-300">
+                  className="block px-6 py-3 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-300"
+                >
                   {item}
                 </a>
               ))}
@@ -92,26 +94,22 @@ export default function Header() {
           )}
         </div>
 
-        {/* Menu Suspenso para Tokens (Create Token, My Tokens) */}
-        <div className="relative group">
+        {/* Tokens Dropdown */}
+        <div className="relative">
           <button
             onClick={toggleTokensMenu}
-            onMouseEnter={() => setIsTokensOpen(true)}
-            onMouseLeave={() => !isTokensOpen && setIsTokensOpen(false)}
-            className="px-5 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg 
-              hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50">
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
             Tokens
           </button>
-          {(isTokensOpen || isTokensOpen) && (
-            <div
-              className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20"
-              onMouseEnter={() => setIsTokensOpen(true)}
-              onMouseLeave={() => setIsTokensOpen(false)}>
-              {['Create Token', 'My Tokens'].map((item, index) => (
+          {isTokensOpen && (
+            <div className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 py-1 z-10">
+              {['Create Token', 'My Tokens'].map((item) => (
                 <a
-                  key={index}
+                  key={item}
                   href={`/app/${item.toLowerCase().replace(' ', '-')}`}
-                  className="block px-6 py-3 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-300">
+                  className="block px-6 py-3 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-300"
+                >
                   {item}
                 </a>
               ))}
@@ -119,13 +117,14 @@ export default function Header() {
           )}
         </div>
 
-        {/* Botão Point & Rewards (Desabilitado) */}
-        <div className="relative flex flex-col items-center group">
-          <a 
-            className="px-5 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg cursor-not-allowed opacity-50 
-            transition-all duration-300 hover:bg-gradient-to-r hover:from-red-400 hover:to-red-600 hover:border-red-500">
+        {/* Point & Rewards Button */}
+        <div className="relative group">
+          <button
+            disabled
+            className="bg-gradient-to-r from-gray-400 to-gray-500 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 shadow-lg cursor-not-allowed opacity-80"
+          >
             Point & Rewards
-          </a>
+          </button>
           <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-green-600 text-xs font-semibold px-3 py-1 rounded-md shadow-md border border-green-500">
             Coming Soon
             <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-b-8 border-green-500"></div>
@@ -133,41 +132,52 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="w-1/5 flex justify-end items-center">
-        {selectedChain === 'EVM' && <appkit-button />}
-        {selectedChain === 'COSMOS' && <WalletConnector />}
-        {!selectedChain && (
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="px-5 py-2 text-sm font-medium bg-gradient-to-r from-green-400 to-green-600 border border-green-500 text-white rounded-lg 
-            hover:bg-gradient-to-r hover:from-white hover:to-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50">
-            Conectar Carteira
+      {/* My Account Dropdown */}
+      <div className="w-1/5 flex justify-end">
+        <div className="relative">
+          <button
+            onClick={toggleAccountMenu}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
+            My Account
           </button>
-        )}
-      </div>
-
-      {/* Modal de Seleção de Rede */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 backdrop-blur-sm">
-          <div className="bg-white/90 p-8 rounded-2xl shadow-xl border border-white/20">
-            <h3 className="text-2xl font-bold mb-6 text-gray-800 text-center">Escolha uma Rede</h3>
-            <div className="flex flex-col gap-4">
-              <button
-                onClick={() => handleChainSelection('EVM')}
-                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 
-                transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/30">
-                EVM
-              </button>
-              <button
-                onClick={() => handleChainSelection('COSMOS')}
-                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 
-                transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/30">
-                COSMOS
-              </button>
+          
+          {isAccountOpen && (
+            <div className="absolute right-0 top-full mt-2 w-64 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 py-2 z-50">
+              {!selectedChain ? (
+                <button 
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg mx-2 my-1"
+                >
+                  Connect Wallet
+                </button>
+              ) : (
+                <>
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-700">Connected to {selectedChain}</p>
+                  </div>
+                  <a
+                    href="/app/profile"
+                    className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-600 transition-all duration-200"
+                  >
+                    Profile Settings
+                  </a>
+                  <a
+                    href="/app/security"
+                    className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-600 transition-all duration-200"
+                  >
+                    Security
+                  </a>
+                  <button 
+                    className="w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 text-left transition-all duration-200"
+                  >
+                    Disconnect Wallet
+                  </button>
+                </>
+              )}
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
