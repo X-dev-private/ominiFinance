@@ -7,10 +7,10 @@ import { WalletConnector } from '../components/WalletConnector';
 export default function Header() {
   const { isConnected } = useAccount();
   const { connectedWallet } = useWallet();
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [isDeFiOpen, setIsDeFiOpen] = useState(false);
   const [isTokensOpen, setIsTokensOpen] = useState(false);
-  const [selectedChain, setSelectedChain] = useState<string | null>(null);
 
   useEffect(() => {
     if (isConnected) {
@@ -22,23 +22,23 @@ export default function Header() {
     }
   }, [isConnected, connectedWallet]);
 
-  const toggleAccountMenu = () => {
-    setIsAccountOpen(!isAccountOpen);
-    setIsDeFiOpen(false);
-    setIsTokensOpen(false);
+  const handleChainSelection = (chain: string) => {
+    setSelectedChain(chain);
+    setIsModalOpen(false);
   };
 
   const toggleDeFiMenu = () => {
     setIsDeFiOpen(!isDeFiOpen);
     setIsTokensOpen(false);
-    setIsAccountOpen(false);
   };
 
   const toggleTokensMenu = () => {
     setIsTokensOpen(!isTokensOpen);
     setIsDeFiOpen(false);
-    setIsAccountOpen(false);
   };
+
+  // Estilo base para todos os botões
+  const buttonStyle = "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg";
 
   return (
     <div className="flex flex-row items-center justify-between w-full h-20 bg-opacity-50 px-6 py-8 rounded-2xl">
@@ -47,43 +47,49 @@ export default function Header() {
       </div>
 
       <div className="w-3/5 flex gap-4 items-center justify-center">
-        {/* Dashboard Button */}
+        {/* Botão Dashboard */}
         <a
           href="/app/dashboard"
-          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+          className={buttonStyle}
         >
           Dashboard
         </a>
 
-        {/* Add Funds Button */}
+        {/* Botão Add Funds */}
         <a
           href="/app/ramp"
-          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+          className={buttonStyle}
         >
-          buy tokens
+          Add Funds
         </a>
 
-        {/* Portfolio Button */}
+        {/* Botão Portfolio */}
         <a
           href="/app/portfolio"
-          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+          className={buttonStyle}
         >
           Portfolio
         </a>
 
-        {/* DeFi Dropdown */}
-        <div className="relative">
+        {/* Menu Suspenso para DeFi */}
+        <div className="relative group">
           <button
             onClick={toggleDeFiMenu}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+            onMouseEnter={() => setIsDeFiOpen(true)}
+            onMouseLeave={() => !isDeFiOpen && setIsDeFiOpen(false)}
+            className={buttonStyle}
           >
             DeFi
           </button>
           {isDeFiOpen && (
-            <div className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 py-1 z-10">
-              {['Swap', 'Liquidity'].map((item) => (
+            <div
+              className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20"
+              onMouseEnter={() => setIsDeFiOpen(true)}
+              onMouseLeave={() => setIsDeFiOpen(false)}
+            >
+              {['Swap', 'Liquidity'].map((item, index) => (
                 <a
-                  key={item}
+                  key={index}
                   href={`/app/${item.toLowerCase()}`}
                   className="block px-6 py-3 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-300"
                 >
@@ -94,19 +100,25 @@ export default function Header() {
           )}
         </div>
 
-        {/* Tokens Dropdown */}
-        <div className="relative">
+        {/* Menu Suspenso para Tokens */}
+        <div className="relative group">
           <button
             onClick={toggleTokensMenu}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+            onMouseEnter={() => setIsTokensOpen(true)}
+            onMouseLeave={() => !isTokensOpen && setIsTokensOpen(false)}
+            className={buttonStyle}
           >
             Tokens
           </button>
           {isTokensOpen && (
-            <div className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 py-1 z-10">
-              {['Create Token', 'My Tokens'].map((item) => (
+            <div
+              className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20"
+              onMouseEnter={() => setIsTokensOpen(true)}
+              onMouseLeave={() => setIsTokensOpen(false)}
+            >
+              {['Create Token', 'My Tokens'].map((item, index) => (
                 <a
-                  key={item}
+                  key={index}
                   href={`/app/${item.toLowerCase().replace(' ', '-')}`}
                   className="block px-6 py-3 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-300"
                 >
@@ -117,11 +129,11 @@ export default function Header() {
           )}
         </div>
 
-        {/* Point & Rewards Button */}
-        <div className="relative group">
+        {/* Botão Point & Rewards (Desabilitado) */}
+        <div className="relative flex flex-col items-center group">
           <button
             disabled
-            className="bg-gradient-to-r from-gray-400 to-gray-500 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 shadow-lg cursor-not-allowed opacity-80"
+            className={`${buttonStyle} opacity-50 cursor-not-allowed`}
           >
             Point & Rewards
           </button>
@@ -132,52 +144,41 @@ export default function Header() {
         </div>
       </div>
 
-      {/* My Account Dropdown */}
-      <div className="w-1/5 flex justify-end">
-        <div className="relative">
-          <button
-            onClick={toggleAccountMenu}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+      <div className="w-1/5 flex justify-end items-center">
+        {selectedChain === 'EVM' && <appkit-button />}
+        {selectedChain === 'COSMOS' && <WalletConnector />}
+        {!selectedChain && (
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className={buttonStyle}
           >
-            My Account
+            Connect Wallet
           </button>
-          
-          {isAccountOpen && (
-            <div className="absolute right-0 top-full mt-2 w-64 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 py-2 z-50">
-              {!selectedChain ? (
-                <button 
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg mx-2 my-1"
-                >
-                  Connect Wallet
-                </button>
-              ) : (
-                <>
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-700">Connected to {selectedChain}</p>
-                  </div>
-                  <a
-                    href="/app/profile"
-                    className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-600 transition-all duration-200"
-                  >
-                    Profile Settings
-                  </a>
-                  <a
-                    href="/app/security"
-                    className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-600 transition-all duration-200"
-                  >
-                    Security
-                  </a>
-                  <button 
-                    className="w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 text-left transition-all duration-200"
-                  >
-                    Disconnect Wallet
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+        )}
       </div>
+
+      {/* Modal de Seleção de Rede */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 backdrop-blur-sm">
+          <div className="bg-white/90 p-8 rounded-2xl shadow-xl border border-white/20">
+            <h3 className="text-2xl font-bold mb-6 text-gray-800 text-center">Choose Network</h3>
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={() => handleChainSelection('EVM')}
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                EVM
+              </button>
+              <button
+                onClick={() => handleChainSelection('COSMOS')}
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full hover:from-purple-700 hover:to-purple-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                COSMOS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

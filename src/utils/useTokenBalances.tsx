@@ -14,7 +14,7 @@ const TOKEN_FACTORY_ABI = [
 
 export interface TokenBalance {
   symbol: string;
-  balance: string;
+  balance: string; // Já será formatado como "1.000,00"
 }
 
 export interface TokenBalances {
@@ -27,10 +27,23 @@ export interface TokenBalances {
 
 const SUPPORTED_TOKENS = ['anjux', 'ethof', 'usdcof'] as const;
 
+// Função para formatar números com separadores de milhar e 2 casas decimais
+const formatBalance = (value: string | number): string => {
+  if (value === "N/A" || value === "0") return "0,00";
+  
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(numValue)) return "0,00";
+  
+  return numValue.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
+
 export const useTokenBalances = (address?: string, chainId?: number): TokenBalances => {
   const [balances, setBalances] = useState<TokenBalances>(() => {
     const initialState = SUPPORTED_TOKENS.reduce((acc, token) => {
-      acc[token] = "0.000";
+      acc[token] = "0,00";
       return acc;
     }, {} as Record<string, string>);
     
@@ -90,10 +103,11 @@ export const useTokenBalances = (address?: string, chainId?: number): TokenBalan
             }
             const tokenContract = new Contract(tokenAddress, ERC20_ABI, provider);
             const balance = await tokenContract.balanceOf(address);
+            const balanceNumber = parseFloat(formatUnits(balance, 18));
             return {
               address: tokenAddress,
               symbol,
-              balance: formatUnits(balance, 18)
+              balance: formatBalance(balanceNumber)
             };
           } catch (error) {
             console.error(`Error fetching token ${tokenAddress}:`, error);
@@ -107,7 +121,7 @@ export const useTokenBalances = (address?: string, chainId?: number): TokenBalan
         if (token) {
           acc[token.address] = {
             symbol: token.symbol,
-            balance: parseFloat(token.balance).toFixed(3)
+            balance: token.balance // Já formatado
           };
         }
         return acc;
@@ -133,7 +147,8 @@ export const useTokenBalances = (address?: string, chainId?: number): TokenBalan
       );
 
       const standardBalances = SUPPORTED_TOKENS.reduce((acc, tokenKey, index) => {
-        acc[tokenKey] = parseFloat(formatUnits(standardBalanceResults[index], 18)).toFixed(3);
+        const balanceNumber = parseFloat(formatUnits(standardBalanceResults[index], 18));
+        acc[tokenKey] = formatBalance(balanceNumber);
         return acc;
       }, {} as Record<string, string>);
 
