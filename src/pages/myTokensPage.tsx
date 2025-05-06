@@ -5,7 +5,6 @@ import { TOKEN_ADDRESSES } from "../config/tokenAddresses";
 import Header from "../libs/header";
 import Footer from "../libs/footer";
 import "../App.css";
-import { useNetworkColor } from '../config/networkColorContext';
 import { useNavigate } from "react-router-dom";
 
 interface TokenDetails {
@@ -21,7 +20,6 @@ interface TokenDetails {
 export default function MyTokensPage() {
   const { address } = useAccount();
   const chainId = useChainId();
-  const networkColor = useNetworkColor();
   const [tokens, setTokens] = useState<TokenDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -220,7 +218,7 @@ export default function MyTokensPage() {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b from-white to-green-50 ${networkColor} p-4 flex flex-col items-center`}>
+    <div className={`min-h-screen p-4 flex flex-col items-center`}>
       <Header />
 
       <div className="flex-grow flex flex-col items-center justify-center w-full max-w-4xl space-y-8">

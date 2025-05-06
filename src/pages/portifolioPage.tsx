@@ -2,7 +2,6 @@ import { useAccount, useChainId } from "wagmi";
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import "../App.css";
-import { useNetworkColor } from '../config/networkColorContext';
 import { useTokenBalances } from "../utils/useTokenBalances";
 import { formatUnits } from "ethers";
 
@@ -27,7 +26,6 @@ const formatTokenValue = (value: bigint, decimals: number): string => {
 export default function PortfolioPage() {
   const { address } = useAccount();
   const chainId = useChainId();
-  const networkColor = useNetworkColor();
   const balances = useTokenBalances(address, chainId);
 
   const formatBalance = (balance: string) => {
@@ -48,7 +46,7 @@ export default function PortfolioPage() {
   };
 
   return (
-    <div className={`mx-auto ${networkColor} min-h-screen flex flex-col`}>
+    <div className={`mx-auto min-h-screen flex flex-col`}>
       <Header />
       
       <main className="flex flex-col items-center justify-center flex-grow pt-24 pb-8 px-4 space-y-12">

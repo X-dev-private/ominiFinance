@@ -6,12 +6,10 @@ import { TOKEN_ADDRESSES } from "../config/tokenAddresses";
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import "../App.css";
-import { useNetworkColor } from '../config/networkColorContext';
 
 export default function CreatePool() {
   const { address } = useAccount();
   const chainId = useChainId(); // Usando hook do wagmi para chainId
-  const networkColor = useNetworkColor();
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -78,7 +76,7 @@ export default function CreatePool() {
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b from-white to-green-50 ${networkColor} p-4 flex flex-col items-center`}>
+    <div className={`min-h-screen bg-gradient-to-b from-white to-green-50 p-4 flex flex-col items-center`}>
       <Header />
 
       <div className="flex-grow w-full max-w-2xl space-y-8 py-8 flex flex-col items-center">

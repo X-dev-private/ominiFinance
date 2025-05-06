@@ -5,10 +5,8 @@ import { ethers } from "ethers";
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import "../App.css";
-import { useNetworkColor } from '../config/networkColorContext';
 
 export default function CreateTokenPage() {
-  const networkColor = useNetworkColor();
   const chainId = useChainId();
   const [tokenName, setTokenName] = useState("");
   const [tokenSymbol, setTokenSymbol] = useState("");
@@ -113,7 +111,7 @@ export default function CreateTokenPage() {
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b from-white to-green-50 ${networkColor} p-4 flex flex-col items-center`}>
+    <div className={`min-h-screen p-4 flex flex-col items-center`}>
       <Header />
 
       <div className="flex-grow flex flex-col items-center justify-center w-full max-w-4xl space-y-8">

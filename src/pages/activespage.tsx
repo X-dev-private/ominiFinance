@@ -4,11 +4,9 @@ import Header from "../libs/header";
 import MintButtonU from "../components/mintButtonUsdc";
 import MintButtonE from "../components/minButtonEth";
 import MintButtonA from "../components/mintButtonAnjuX";
-import { useNetworkColor } from '../config/networkColorContext';
 import { ethers } from 'ethers';
 
-const Actives: React.FC = () => {
-  const networkColor = useNetworkColor(); // Obtendo a cor da rede do contexto
+const Actives: React.FC = () => { // Obtendo a cor da rede do contexto
 
   const connectToLuksoTestnet = async () => {
     if (window.ethereum) {
@@ -93,7 +91,7 @@ const Actives: React.FC = () => {
   };
 
   return (
-    <div className={`mx-auto ${networkColor} min-h-screen flex flex-col`}>
+    <div className={`mx-auto min-h-screen flex flex-col`}>
       <Header />
 
       <div className="flex flex-col items-center justify-center flex-grow w-full px-6 mt-30 mb-20">

@@ -5,7 +5,6 @@ import { useAccount, useChainId } from "wagmi";
 import { TOKEN_ADDRESSES } from "../config/tokenAddresses";
 import Footer from "../libs/footer";
 import Header from "../libs/header";
-import { useNetworkColor } from '../config/networkColorContext';
 import ManagerPool from "../components/managerPool";
 
 interface TokenInfo {
@@ -21,7 +20,6 @@ interface TokenInfo {
 export default function TokenConfigPage() {
   const { address } = useAccount();
   const chainId = useChainId();
-  const networkColor = useNetworkColor();
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -149,7 +147,7 @@ export default function TokenConfigPage() {
   if (!tokenInfo) return null;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b from-white to-green-50 ${networkColor} p-4 flex flex-col items-center`}>
+    <div className={`min-h-screen bg-gradient-to-b from-white to-green-50 p-4 flex flex-col items-center`}>
       <Header />
 
       <div className="flex-grow w-full max-w-4xl space-y-8 py-8">
