@@ -25,7 +25,10 @@ export default defineConfig({
     include: [
       '@sei-js/react',
       '@cosmjs/launchpad',
-      '@cosmjs/stargate'
+      '@cosmjs/stargate',
+      'i18next',
+      'react-i18next',
+      'i18next-browser-languagedetector'
     ]
   }
 });

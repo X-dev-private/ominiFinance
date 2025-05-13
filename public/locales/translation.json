@@ -1,0 +1,61 @@
+{
+    "header": {
+      "home": "Início",
+      "docs": "Documentos",
+      "roadmap": "Roteiro",
+      "launchTestnet": "Lançar Testnet"
+    },
+    "hero": {
+      "title": "OminiFinance",
+      "subtitle": "Plataforma Cross-Chain DeFi",
+      "description": "A solução definitiva de interoperabilidade construída sobre o Cosmos, conectando todos os principais ecossistemas blockchain através da tecnologia avançada IBC.",
+      "launchApp": "Lançar App",
+      "documentation": "Documentação"
+    },
+    "about": {
+      "title": "Finanças Unificadas Multi-Chain",
+      "description": "OminiFinance revoluciona o DeFi criando conexões contínuas entre ecossistemas blockchain isolados."
+    },
+    "crossChainSwaps": "Trocas Cross-Chain",
+    "crossChainSwapsDescription": "Troque ativos entre diferentes blockchains sem precisar de embalagens ou intermediários.",
+    "yieldAggregation": "Agregação de Yield",
+    "yieldAggregationDescription": "Acesse os melhores rendimentos em várias cadeias de uma única interface.",
+    "ibcNative": "IBC Nativo",
+    "ibcNativeDescription": "Construído sobre o Cosmos SDK com suporte nativo para Comunicação Inter-Blockchain.",
+    "cosmosPower": "MOVIMENTADO POR COSMOS",
+    "cosmosTitle": "A Mais Avançada Interoperabilidade Blockchain",
+    "cosmosDescription": "OminiFinance aproveita o Cosmos SDK e o consenso Tendermint para fornecer desempenho de nível empresarial e capacidades cross-chain incomparáveis.",
+    "cosmosFeature1": "Finalidade instantânea das transações com Tendermint BFT",
+    "cosmosFeature2": "Protocolo IBC nativo para comunicação fluida entre cadeias",
+    "cosmosFeature3": "Arquitetura modular para facilidades de upgrades e customizações",
+    "cosmosWhyTitle": "Por que Cosmos?",
+    "cosmosWhyDescription": "O Cosmos é a Internet dos Blockchains - um ecossistema de cadeias interconectadas e soberanas que podem trocar valor e dados através do IBC.",
+    "cosmosForDevelopersTitle": "Para Desenvolvedores",
+    "cosmosForDevelopers": "O Cosmos SDK fornece a estrutura mais flexível para construir blockchains específicos para aplicações.",
+    "cosmosForUsersTitle": "Para Usuários",
+    "cosmosForUsers": "Experimente verdadeira interoperabilidade sem ativos embalados ou pontes centralizadas.",
+    "cosmosForEcosystemTitle": "Para o Ecossistema",
+    "cosmosForEcosystem": "Modelo de segurança compartilhada e rede crescente de cadeias interconectadas.",
+    "connectedEcosystem": "Ecossistema Conectado",
+    "connectedEcosystemDescription": "Suporte nativo para 50+ cadeias habilitadas para IBC e pontes seguras para redes principais.",
+    "ctaTitle": "Pronto para experimentar o Cross-Chain DeFi?",
+    "ctaDescription": "Junte-se a milhares de usuários gerenciando ativos em várias blockchains com OminiFinance.",
+    "launchAppNow": "Lançar App Agora",
+    "footer": {
+      "about": "A plataforma cross-chain DeFi definitiva construída sobre o Cosmos.",
+      "product": "Produto",
+      "resources": "Recursos",
+      "company": "Empresa",
+      "app": "App",
+      "roadmap": "Roteiro",
+      "features": "Características",
+      "documentation": "Documentação",
+      "github": "GitHub",
+      "whitepaper": "Whitepaper",
+      "aboutText": "Sobre",
+      "blog": "Blog",
+      "contact": "Contato",
+      "allRightsReserved": "© 2025 OminiFinance. Todos os direitos reservados."
+    }
+  }
+  
