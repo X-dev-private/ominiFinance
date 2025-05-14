@@ -20,7 +20,7 @@ export const NetworkColorProvider: React.FC<NetworkColorProviderProps> = ({ chil
 
   useEffect(() => {
     if (!isConnected) {
-      setNetworkColor("bg-gradient-to-b from-white to-green-500");
+      setNetworkColor("bg-green-400");
     } else {
       if (chainId === 11155111) {
         setNetworkColor("bg-gradient-to-b from-white via-blue-300 to-white");

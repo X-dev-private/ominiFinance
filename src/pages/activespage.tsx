@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Footer from "../libs/footer";
 import Header from "../libs/header";
 import { StargateClient } from "@cosmjs/stargate";
+import { 
+  AssetsService, 
+  SUPPORTED_CHAINS,
+  TokenInfo,
+  Balance
+} from "../services/assetsService";
 
 declare global {
   interface Window {
@@ -10,68 +16,15 @@ declare global {
   }
 }
 
-interface Balance {
-  denom: string;
-  amount: string;
-}
-
-interface TokenInfo {
-  id: string;
-  name: string;
-  symbol: string;
-  icon: string;
-  chain: string;
-}
-
 const Actives: React.FC = () => {
   const [keplrBalances, setKeplrBalances] = useState<Balance[]>([]);
   const [isLoadingBalances, setIsLoadingBalances] = useState(false);
   const [activeChain, setActiveChain] = useState<string>("cosmoshub-4");
   const [tokenMetadata, setTokenMetadata] = useState<TokenInfo[]>([]);
 
-  // Chains suportadas
-  const SUPPORTED_CHAINS = [
-    { id: "cosmoshub-4", name: "Cosmos Hub", rpc: "https://rpc.cosmos.network" },
-    { id: "osmosis-1", name: "Osmosis", rpc: "https://rpc.osmosis.zone" },
-    { id: "juno-1", name: "Juno", rpc: "https://rpc-juno.itastakers.com" },
-    { id: "secret-4", name: "Secret Network", rpc: "https://rpc.secret.express" }
-  ];
-
-  // Metadados dos tokens principais
-  const CORE_TOKENS: TokenInfo[] = [
-    {
-      id: 'cosmos',
-      name: 'Cosmos',
-      symbol: 'ATOM',
-      icon: 'https://assets.coingecko.com/coins/images/1481/large/cosmos_hub.png?1555657960',
-      chain: 'cosmoshub-4'
-    },
-    {
-      id: 'osmosis',
-      name: 'Osmosis',
-      symbol: 'OSMO',
-      icon: 'https://assets.coingecko.com/coins/images/16724/large/osmo.png?1632763885',
-      chain: 'osmosis-1'
-    },
-    {
-      id: 'juno-network',
-      name: 'Juno',
-      symbol: 'JUNO',
-      icon: 'https://assets.coingecko.com/coins/images/19249/large/juno.png?1642838082',
-      chain: 'juno-1'
-    },
-    {
-      id: 'secret',
-      name: 'Secret',
-      symbol: 'SCRT',
-      icon: 'https://assets.coingecko.com/coins/images/11871/large/Secret.png?1595520186',
-      chain: 'secret-4'
-    }
-  ];
-
   // Carrega metadados dos tokens
   useEffect(() => {
-    setTokenMetadata(CORE_TOKENS);
+    setTokenMetadata(AssetsService.getAllTokenMetadata());
   }, []);
 
   // Função para obter saldos da Keplr
@@ -91,6 +44,7 @@ const Actives: React.FC = () => {
       const client = await StargateClient.connect(chainInfo.rpc);
       const balances = await client.getAllBalances(userAddress);
 
+      AssetsService.setBalances(activeChain, balances);
       setKeplrBalances(balances);
     } catch (error) {
       console.error("Erro ao buscar saldos:", error);
@@ -99,28 +53,9 @@ const Actives: React.FC = () => {
     }
   };
 
-  // Formata os saldos
-  const formatBalance = (amount: string, denom: string) => {
-    if (denom.startsWith("u")) {
-      const displayDenom = denom.slice(1).toUpperCase();
-      const displayAmount = (parseInt(amount) / 1e6).toFixed(6);
-      return { amount: displayAmount, denom: displayDenom };
-    }
-    return { amount, denom };
-  };
-
   // Encontra o token pelo denom
   const findTokenInfo = (denom: string): TokenInfo | undefined => {
-    const symbol = denom.startsWith('u') ? denom.slice(1).toUpperCase() : denom;
-    return tokenMetadata.find(token => 
-      token.symbol === symbol && token.chain === activeChain
-    ) || {
-      id: denom,
-      name: denom,
-      symbol: denom,
-      icon: 'https://cryptologos.cc/logos/crypto-com-coin-cro-logo.png',
-      chain: activeChain
-    };
+    return AssetsService.findTokenInfo(denom, activeChain);
   };
 
   // Busca automaticamente os saldos quando a chain muda
@@ -205,7 +140,7 @@ const Actives: React.FC = () => {
                 </div>
                 <div className="divide-y divide-white/10">
                   {keplrBalances.map((balance, index) => {
-                    const { amount, denom } = formatBalance(balance.amount, balance.denom);
+                    const { amount, denom } = AssetsService.formatBalance(balance.amount, balance.denom);
                     const token = findTokenInfo(balance.denom);
                     const hasBalance = parseFloat(amount) > 0;
                     
@@ -286,63 +221,61 @@ const Actives: React.FC = () => {
           <div className="mt-16">
             <h2 className="text-3xl font-bold text-white mb-6">Tokens Principais</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {tokenMetadata
-                .filter(token => token.chain === activeChain)
-                .map((token) => {
-                  const userBalance = keplrBalances.find(b => {
-                    const denom = b.denom.startsWith('u') ? b.denom.slice(1).toUpperCase() : b.denom;
-                    return denom === token.symbol;
-                  });
-                  
-                  const formattedBalance = userBalance 
-                    ? formatBalance(userBalance.amount, userBalance.denom)
-                    : { amount: '0', denom: token.symbol };
+              {AssetsService.getTokensByChain(activeChain).map((token) => {
+                const userBalance = keplrBalances.find(b => {
+                  const denom = b.denom.startsWith('u') ? b.denom.slice(1).toUpperCase() : b.denom;
+                  return denom === token.symbol;
+                });
+                
+                const formattedBalance = userBalance 
+                  ? AssetsService.formatBalance(userBalance.amount, userBalance.denom)
+                  : { amount: '0', denom: token.symbol };
 
-                  const hasBalance = parseFloat(formattedBalance.amount) > 0;
+                const hasBalance = parseFloat(formattedBalance.amount) > 0;
 
-                  return (
-                    <div 
-                      key={token.id} 
-                      className={`bg-white/5 backdrop-blur-lg rounded-2xl p-5 hover:bg-white/10 transition-colors border border-white/10 ${
-                        hasBalance ? 'ring-1 ring-white/20' : ''
-                      }`}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center ${
-                          hasBalance ? 'ring-2 ring-white/30' : 'opacity-70'
-                        }`}>
-                          <img 
-                            src={token.icon} 
-                            alt={token.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-white text-lg">{token.name}</h3>
-                          <p className="text-sm text-white/60">{token.symbol}</p>
-                        </div>
+                return (
+                  <div 
+                    key={token.id} 
+                    className={`bg-white/5 backdrop-blur-lg rounded-2xl p-5 hover:bg-white/10 transition-colors border border-white/10 ${
+                      hasBalance ? 'ring-1 ring-white/20' : ''
+                    }`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center ${
+                        hasBalance ? 'ring-2 ring-white/30' : 'opacity-70'
+                      }`}>
+                        <img 
+                          src={token.icon} 
+                          alt={token.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <div className="mt-5">
-                        <p className="text-sm text-white/50">Saldo disponível</p>
-                        <p className={`font-mono text-xl mt-1 ${
-                          hasBalance ? 'text-white' : 'text-white/40'
-                        }`}>
-                          {formattedBalance.amount} {formattedBalance.denom}
-                        </p>
+                      <div>
+                        <h3 className="font-medium text-white text-lg">{token.name}</h3>
+                        <p className="text-sm text-white/60">{token.symbol}</p>
                       </div>
-                      {hasBalance && (
-                        <div className="mt-4 flex space-x-2">
-                          <button className="flex-1 bg-white/10 hover:bg-white/20 text-white text-sm py-2 px-3 rounded-lg border border-white/20 transition-colors">
-                            Enviar
-                          </button>
-                          <button className="flex-1 bg-white text-black hover:bg-white/90 text-sm py-2 px-3 rounded-lg transition-colors">
-                            Receber
-                          </button>
-                        </div>
-                      )}
                     </div>
-                  );
-                })}
+                    <div className="mt-5">
+                      <p className="text-sm text-white/50">Saldo disponível</p>
+                      <p className={`font-mono text-xl mt-1 ${
+                        hasBalance ? 'text-white' : 'text-white/40'
+                      }`}>
+                        {formattedBalance.amount} {formattedBalance.denom}
+                      </p>
+                    </div>
+                    {hasBalance && (
+                      <div className="mt-4 flex space-x-2">
+                        <button className="flex-1 bg-white/10 hover:bg-white/20 text-white text-sm py-2 px-3 rounded-lg border border-white/20 transition-colors">
+                          Enviar
+                        </button>
+                        <button className="flex-1 bg-white text-black hover:bg-white/90 text-sm py-2 px-3 rounded-lg transition-colors">
+                          Receber
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
