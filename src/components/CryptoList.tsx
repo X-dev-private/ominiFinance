@@ -7,7 +7,7 @@ const CryptoList: React.FC = () => {
   const { data: prices, isLoading, error } = useQuery({
     queryKey: ['cryptoPrices'],
     queryFn: getCryptoPrices,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Obtém todos os tokens e filtra os destacados primeiro
@@ -39,32 +39,64 @@ const CryptoList: React.FC = () => {
     </div>
   );
 
+  // Função para calcular estatísticas do mercado Cosmos
+  const calculateCosmosStats = () => {
+    if (!prices) return null;
+    
+    const cosmosTokens = allTokens.filter(token => 
+      token.chain !== 'bitcoin' && 
+      token.chain !== 'ethereum' &&
+      token.chain !== 'solana' &&
+      token.chain !== 'binance-smart-chain' &&
+      token.chain !== 'avalanche' &&
+      token.chain !== 'polygon'
+    );
+
+    const cosmosPrices = cosmosTokens
+      .map(token => prices[token.id])
+      .filter(Boolean);
+
+    return {
+      totalMarketCap: cosmosPrices.reduce((sum, price) => sum + price.usd, 0),
+      total24hChange: cosmosPrices.reduce((sum, price) => sum + price.usd_24h_change, 0) / cosmosPrices.length,
+      topGainer: cosmosPrices.reduce((a, b) => a.usd_24h_change > b.usd_24h_change ? a : b),
+      topLoser: cosmosPrices.reduce((a, b) => a.usd_24h_change < b.usd_24h_change ? a : b)
+    };
+  };
+
+  const cosmosStats = calculateCosmosStats();
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header with stats */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Cryptocurrency Market</h1>
-          <p className="text-white/70 mt-1">Real-time prices and trading</p>
+          <h1 className="text-3xl font-bold text-white">Cosmos Ecosystem Market</h1>
+          <p className="text-white/70 mt-1">Interchain assets and prices</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <div className="bg-white/5 px-4 py-2 rounded-xl border border-white/10">
-            <p className="text-xs text-white/50">Total Market Cap</p>
+            <p className="text-xs text-white/50">Cosmos Market Cap</p>
             <p className="text-lg font-semibold text-white">
-              {prices ? 
-                `$${(Object.values(prices).reduce((sum, price) => sum + price.usd, 0) / 1e9).toFixed(2)}B` 
+              {cosmosStats ? 
+                `$${(cosmosStats.totalMarketCap / 1e9).toFixed(2)}B` 
                 : '-'
               }
             </p>
           </div>
           <div className="bg-white/5 px-4 py-2 rounded-xl border border-white/10">
-            <p className="text-xs text-white/50">24h Volume</p>
-            <p className="text-lg font-semibold text-white">
-              {prices ? 
-                `$${(Object.values(prices).reduce((sum, price) => sum + price.usd, 0) / 1e8).toFixed(2)}B` 
-                : '-'
-              }
+            <p className="text-xs text-white/50">Avg 24h Change</p>
+            <p className={`text-lg font-semibold ${
+              cosmosStats?.total24hChange ? 
+                cosmosStats.total24hChange >= 0 ? 'text-green-400' : 'text-red-400' 
+                : 'text-white'
+            }`}>
+              {cosmosStats ? `${cosmosStats.total24hChange.toFixed(2)}%` : '-'}
             </p>
+          </div>
+          <div className="bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+            <p className="text-xs text-white/50">Total Assets</p>
+            <p className="text-lg font-semibold text-white">{allTokens.length}</p>
           </div>
         </div>
       </div>
@@ -74,9 +106,10 @@ const CryptoList: React.FC = () => {
         {/* Table Header */}
         <div className="grid grid-cols-12 gap-4 p-4 bg-white/5 border-b border-white/10">
           <div className="col-span-5 md:col-span-4 text-white/70 font-medium">Asset</div>
-          <div className="col-span-3 text-right text-white/70 font-medium">Price</div>
-          <div className="col-span-4 md:col-span-3 text-right text-white/70 font-medium">24h Change</div>
-          <div className="col-span-3 text-right text-white/70 font-medium">Actions</div>
+          <div className="col-span-2 text-right text-white/70 font-medium">Chain</div>
+          <div className="col-span-2 text-right text-white/70 font-medium">Price</div>
+          <div className="col-span-3 text-right text-white/70 font-medium">24h Change</div>
+          <div className="col-span-2 text-right text-white/70 font-medium">Actions</div>
         </div>
 
         {/* Token Rows */}
@@ -119,18 +152,25 @@ const CryptoList: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Chain */}
+                <div className="col-span-2 text-right">
+                  <p className="text-sm text-white/70">
+                    {token.chain.split('-')[0]}
+                  </p>
+                </div>
+
                 {/* Price */}
-                <div className="col-span-3 text-right">
+                <div className="col-span-2 text-right">
                   <p className={`font-medium ${token.highlight ? 'text-amber-200' : 'text-white'}`}>
                     {priceData ? `$${priceData.usd.toLocaleString(undefined, { 
                       minimumFractionDigits: 2, 
-                      maximumFractionDigits: 6 
+                      maximumFractionDigits: priceData.usd < 1 ? 6 : 2 
                     })}` : '-'}
                   </p>
                 </div>
 
                 {/* 24h Change */}
-                <div className="col-span-4 md:col-span-3 text-right">
+                <div className="col-span-3 text-right">
                   {priceData ? (
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       isPositive 
@@ -147,7 +187,7 @@ const CryptoList: React.FC = () => {
                           <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
-                      {priceData.usd_24h_change.toFixed(2)}%
+                      {Math.abs(priceData.usd_24h_change).toFixed(2)}%
                     </span>
                   ) : (
                     <span className="text-gray-400">-</span>
@@ -155,10 +195,10 @@ const CryptoList: React.FC = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="col-span-3 flex justify-end gap-2">
+                <div className="col-span-2 flex justify-end gap-2">
                   <button
                     onClick={() => handleAction('buy', token.id)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
                       token.highlight 
                         ? 'bg-amber-500 hover:bg-amber-600 text-white' 
                         : 'bg-green-500 hover:bg-green-600 text-white'
@@ -168,7 +208,7 @@ const CryptoList: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleAction('sell', token.id)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
                       token.highlight 
                         ? 'bg-red-500 hover:bg-red-600 text-white' 
                         : 'bg-rose-500 hover:bg-rose-600 text-white'
@@ -187,46 +227,37 @@ const CryptoList: React.FC = () => {
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 p-4 rounded-xl border border-blue-500/20">
           <h3 className="text-blue-400 font-medium">Top Gainer (24h)</h3>
-          {prices && (
+          {cosmosStats?.topGainer && (
             <>
               <p className="text-2xl font-bold text-white mt-2">
-                {Object.entries(prices).reduce((a, b) => 
-                  a[1].usd_24h_change > b[1].usd_24h_change ? a : b)[0]
-                }
+                {allTokens.find(t => t.id === Object.keys(prices).find(k => prices[k] === cosmosStats.topGainer))?.symbol || '-'}
               </p>
               <p className="text-green-400 text-sm mt-1">
-                +{Math.max(...Object.values(prices).map(p => p.usd_24h_change)).toFixed(2)}%
+                +{cosmosStats.topGainer.usd_24h_change.toFixed(2)}%
               </p>
             </>
           )}
         </div>
         <div className="bg-gradient-to-r from-red-500/10 to-red-600/10 p-4 rounded-xl border border-red-500/20">
           <h3 className="text-red-400 font-medium">Top Loser (24h)</h3>
-          {prices && (
+          {cosmosStats?.topLoser && (
             <>
               <p className="text-2xl font-bold text-white mt-2">
-                {Object.entries(prices).reduce((a, b) => 
-                  a[1].usd_24h_change < b[1].usd_24h_change ? a : b)[0]
-                }
+                {allTokens.find(t => t.id === Object.keys(prices).find(k => prices[k] === cosmosStats.topLoser))?.symbol || '-'}
               </p>
               <p className="text-red-400 text-sm mt-1">
-                {Math.min(...Object.values(prices).map(p => p.usd_24h_change)).toFixed(2)}%
+                {cosmosStats.topLoser.usd_24h_change.toFixed(2)}%
               </p>
             </>
           )}
         </div>
         <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/10 p-4 rounded-xl border border-purple-500/20">
-          <h3 className="text-purple-400 font-medium">Most Volatile</h3>
+          <h3 className="text-purple-400 font-medium">Most Active</h3>
           {prices && (
             <>
-              <p className="text-2xl font-bold text-white mt-2">
-                {Object.entries(prices).reduce((a, b) => 
-                  Math.abs(a[1].usd_24h_change) > Math.abs(b[1].usd_24h_change) ? a : b)[0]
-                }
-              </p>
+              <p className="text-2xl font-bold text-white mt-2">ATOM</p>
               <p className="text-amber-400 text-sm mt-1">
-                {Object.values(prices).reduce((a, b) => 
-                  Math.abs(a.usd_24h_change) > Math.abs(b.usd_24h_change) ? a : b).usd_24h_change.toFixed(2)}%
+                {cosmosStats?.total24hChange.toFixed(2)}%
               </p>
             </>
           )}

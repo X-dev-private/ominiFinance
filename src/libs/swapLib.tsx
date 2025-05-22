@@ -1,150 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useTokenSwapEVM } from '../utils/useTokenSwap';
-import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { OfflineSigner } from '@cosmjs/proto-signing';
+import React, { useState, useEffect } from 'react';
 import TokenSelector from '../components/tokenSelector';
-
-const TokenSwap = () => {
-  const [isCosmosActive, setIsCosmosActive] = useState(false);
-
-  useEffect(() => {
-    const checkCosmosWallet = async () => {
-      if (window.getOfflineSigner) {
-        try {
-          const signer: OfflineSigner = window.getOfflineSigner('cosmoshub-4');
-          await SigningCosmWasmClient.connectWithSigner(
-            'https://rpc.cosmos.network', 
-            signer
-          );
-          setIsCosmosActive(true);
-        } catch (error) {
-          setIsCosmosActive(false);
-        }
-      }
-    };
-
-    checkCosmosWallet();
-  }, []);
-
-  const {
-    amount,
-    tokens,
-    fromToken,
-    toToken,
-    loading,
-    approveLoading,
-    swapLoading,
-    isApproved,
-    error,
-    formatNumber,
-    handleAmountChange,
-    handleFromTokenChange,
-    handleToTokenChange,
-    handleSwapAction
-  } = useTokenSwapEVM();
-
-  const renderTokenBalance = (symbol: string) => {
-    if (loading) return 'Loading balance...';
-    const token = tokens.find(t => t.symbol === symbol);
-    const balance = token ? formatNumber(token.balance) : '0,00';
-    return `Balance: ${balance} ${symbol}`;
-  };
-
-  const ActionButton = () => {
-    if (approveLoading && !isCosmosActive) {
-      return (
-        <div className="flex items-center justify-center">
-          <Spinner />
-          <span className="ml-2">Approving...</span>
-        </div>
-      );
-    }
-    
-    if (swapLoading) {
-      return (
-        <div className="flex items-center justify-center">
-          <Spinner />
-          <span className="ml-2">Swapping...</span>
-        </div>
-      );
-    }
-    
-    return (!isCosmosActive && !isApproved) ? 'Approve Token' : 'Confirm Swap';
-  };
-
-  const Spinner = () => (
-    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-  );
-
-  const NetworkIndicator = () => (
-    <div className="mb-2 text-sm text-right">
-      {isCosmosActive ? (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-          <svg className="mr-1.5 h-2 w-2 text-purple-800" fill="currentColor" viewBox="0 0 8 8">
-            <circle cx="4" cy="4" r="3" />
-          </svg>
-          Cosmos Network
-        </span>
-      ) : (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          <svg className="mr-1.5 h-2 w-2 text-blue-800" fill="currentColor" viewBox="0 0 8 8">
-            <circle cx="4" cy="4" r="3" />
-          </svg>
-          EVM Network
-        </span>
-      )}
-    </div>
-  );
-
-  return (
-    <div className="flex items-center justify-center min-h-screen px-4">
-      <div className="w-full max-w-2xl p-8 bg-white rounded-2xl shadow-xl border border-green-100">
-        <HeaderSection />
-        <NetworkIndicator />
-        <div className="space-y-6">
-          <TokenInput
-            label="From"
-            token={fromToken}
-            balance={renderTokenBalance(fromToken)}
-            tokens={tokens}
-            onTokenChange={handleFromTokenChange}
-            amount={formatNumber(amount)}
-            onAmountChange={handleAmountChange}
-            readOnly={false}
-          />
-          <SwapArrow />
-          <TokenInput
-            label="To"
-            token={toToken}
-            balance={renderTokenBalance(toToken)}
-            tokens={tokens}
-            onTokenChange={handleToTokenChange}
-            amount={amount ? formatNumber(amount) : "0,00"}
-            readOnly={true}
-          />
-        </div>
-        <TransactionDetails isCosmosActive={isCosmosActive} />
-        {error && (
-          <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
-        <button
-          onClick={handleSwapAction}
-          disabled={approveLoading || swapLoading || loading}
-          className={`w-full mt-8 py-4 text-white font-bold rounded-xl shadow-md transition-colors duration-200 text-lg ${
-            (!isCosmosActive && !isApproved) ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          <ActionButton />
-        </button>
-      </div>
-    </div>
-  );
-};
+import { AssetsService, TokenInfo } from '../services/assetsService';
 
 const HeaderSection = () => (
   <div className="mb-8">
@@ -163,52 +19,6 @@ const HeaderSection = () => (
   </div>
 );
 
-interface TokenInputProps {
-  label: string;
-  token: string;
-  balance: string;
-  tokens: Array<{ symbol: string; balance: string }>;
-  onTokenChange: (token: string) => void;
-  amount: string;
-  onAmountChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  readOnly: boolean;
-}
-
-const TokenInput = ({
-  label,
-  token,
-  balance,
-  tokens,
-  onTokenChange,
-  amount,
-  onAmountChange,
-  readOnly
-}: TokenInputProps) => (
-  <div className="space-y-3">
-    <div className="flex justify-between items-center">
-      <span className="text-gray-600 text-base font-medium">{label}</span>
-      <span className="text-gray-600 text-base">{balance}</span>
-    </div>
-    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-green-400 transition-colors">
-      <div className="w-2/5 min-w-[160px]"> 
-        <TokenSelector 
-          tokens={tokens}
-          selectedToken={token}
-          onSelect={onTokenChange}
-        />
-      </div>
-      <input
-        className="w-3/5 bg-transparent text-gray-800 text-right text-3xl font-medium focus:outline-none placeholder-gray-400"
-        type="text"
-        placeholder="0,00"
-        value={amount}
-        onChange={onAmountChange}
-        readOnly={readOnly}
-      />
-    </div>
-  </div>
-);
-
 const SwapArrow = () => (
   <div className="flex justify-center my-2">
     <button className="p-3 bg-white rounded-full border border-gray-200 shadow-sm hover:bg-green-50 hover:border-green-400 transition-colors">
@@ -219,11 +29,67 @@ const SwapArrow = () => (
   </div>
 );
 
-interface TransactionDetailsProps {
+interface TokenInputProps {
+  label: string;
+  token: string;
+  balance: string;
+  tokens: TokenInfo[];
+  onTokenChange: (token: string) => void;
+  amount: string;
+  onAmountChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  readOnly: boolean;
   isCosmosActive: boolean;
 }
 
-const TransactionDetails = ({ isCosmosActive }: TransactionDetailsProps) => (
+const TokenInput: React.FC<TokenInputProps> = ({
+  label,
+  token,
+  balance,
+  tokens,
+  onTokenChange,
+  amount,
+  onAmountChange,
+  readOnly,
+  isCosmosActive
+}) => {
+  const selectedToken = tokens.find(t => t.symbol === token);
+  const tokenPrice = selectedToken ? AssetsService.getPrice(selectedToken.id)?.usd : 0;
+  const usdValue = tokenPrice && amount ? (parseFloat(amount) * tokenPrice).toFixed(2) : '0.00';
+  
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <span className="text-gray-600 text-base font-medium">{label}</span>
+        <span className="text-gray-600 text-base">{balance}</span>
+      </div>
+      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-green-400 transition-colors">
+        <div className="w-2/5 min-w-[160px]"> 
+          <TokenSelector 
+            tokens={tokens}
+            selectedToken={token}
+            onSelect={onTokenChange}
+            isCosmosActive={isCosmosActive}
+          />
+        </div>
+        <div className="w-3/5 flex flex-col items-end">
+          <input
+            className="w-full bg-transparent text-gray-800 text-right text-3xl font-medium focus:outline-none placeholder-gray-400"
+            type="text"
+            placeholder="0,00"
+            value={amount}
+            onChange={onAmountChange}
+            readOnly={readOnly}
+          />
+          <span className="text-sm text-gray-500 mt-1">
+            ${usdValue}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TransactionDetails = () => (
   <div className="mt-8 space-y-6">
     <div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">Transaction Details</h3>
@@ -254,9 +120,7 @@ const TransactionDetails = ({ isCosmosActive }: TransactionDetailsProps) => (
       <div className="grid grid-cols-2 gap-4">
         <div>
           <h4 className="text-gray-600 text-base mb-2">Network</h4>
-          <span className="text-gray-800 font-medium">
-            {isCosmosActive ? 'Cosmos' : 'Ethereum'}
-          </span>
+          <span className="text-gray-800 font-medium">Cosmos</span>
         </div>
         <div>
           <h4 className="text-gray-600 text-base mb-2">Slippage Tolerance</h4>
@@ -266,5 +130,120 @@ const TransactionDetails = ({ isCosmosActive }: TransactionDetailsProps) => (
     </div>
   </div>
 );
+
+const TokenSwap = () => {
+  const [fromToken, setFromToken] = useState<string>('ATOM');
+  const [toToken, setToToken] = useState<string>('OSMO');
+  const [fromAmount, setFromAmount] = useState<string>('1.00');
+  const [toAmount, setToAmount] = useState<string>('8.50');
+  const [tokens, setTokens] = useState<TokenInfo[]>([]);
+  const [isCosmosActive, setIsCosmosActive] = useState<boolean>(true);
+
+  // Carrega os tokens disponíveis
+  useEffect(() => {
+    const availableTokens = AssetsService.getAllTokenMetadata();
+    setTokens(availableTokens);
+    
+    // Simula carregamento de preços (em uma aplicação real, isso viria de uma API)
+    const mockPrices = {
+      'cosmos': { usd: 9.85, usd_24h_change: 2.5 },
+      'osmosis': { usd: 0.50, usd_24h_change: -1.2 },
+      'juno-network': { usd: 0.25, usd_24h_change: 5.7 },
+      // Adicione outros preços conforme necessário
+    };
+    AssetsService.updatePrices(mockPrices);
+  }, []);
+
+  // Simula saldos do usuário
+  useEffect(() => {
+    const mockBalances = [
+      { denom: 'uatom', amount: '10000000' }, // 10 ATOM
+      { denom: 'uosmo', amount: '0' }, // 0 OSMO
+      { denom: 'ujuno', amount: '5000000' } // 5 JUNO
+    ];
+    AssetsService.setBalances('cosmoshub-4', mockBalances);
+  }, []);
+
+  const handleFromTokenChange = (tokenSymbol: string) => {
+    setFromToken(tokenSymbol);
+    // Aqui você adicionaria a lógica para recalcular o valor de saída
+  };
+
+  const handleToTokenChange = (tokenSymbol: string) => {
+    setToToken(tokenSymbol);
+    // Aqui você adicionaria a lógica para recalcular o valor de saída
+  };
+
+  const handleFromAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFromAmount(value);
+    // Aqui você adicionaria a lógica para recalcular o valor de saída
+    // Exemplo simplificado:
+    if (fromToken === 'ATOM' && toToken === 'OSMO') {
+      setToAmount((parseFloat(value || '0') * 8.5).toFixed(2));
+    }
+  };
+
+  // Obtém o saldo formatado para exibição
+  const getFormattedBalance = (tokenSymbol: string): string => {
+    const token = tokens.find(t => t.symbol === tokenSymbol);
+    if (!token) return 'Balance: 0.00';
+    
+    const balanceInfo = AssetsService.getFormattedBalance(token.id, token.chain);
+    return `Balance: ${balanceInfo.amount} ${balanceInfo.denom}`;
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen px-4">
+      <div className="w-full max-w-2xl p-8 bg-white rounded-2xl shadow-xl border border-green-100">
+        <HeaderSection />
+        
+        <div className="mb-2 text-sm text-right">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <svg className="mr-1.5 h-2 w-2 text-purple-800" fill="currentColor" viewBox="0 0 8 8">
+              <circle cx="4" cy="4" r="3" />
+            </svg>
+            Cosmos Network
+          </span>
+        </div>
+
+        <div className="space-y-6">
+          <TokenInput
+            label="From"
+            token={fromToken}
+            balance={getFormattedBalance(fromToken)}
+            tokens={tokens}
+            onTokenChange={handleFromTokenChange}
+            amount={fromAmount}
+            onAmountChange={handleFromAmountChange}
+            readOnly={false}
+            isCosmosActive={isCosmosActive}
+          />
+          
+          <SwapArrow />
+          
+          <TokenInput
+            label="To"
+            token={toToken}
+            balance={getFormattedBalance(toToken)}
+            tokens={tokens}
+            onTokenChange={handleToTokenChange}
+            amount={toAmount}
+            readOnly={true}
+            isCosmosActive={isCosmosActive}
+          />
+        </div>
+
+        <TransactionDetails />
+
+        <button
+          className="w-full mt-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors duration-200 text-lg"
+        >
+          Confirm Swap
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default TokenSwap;
