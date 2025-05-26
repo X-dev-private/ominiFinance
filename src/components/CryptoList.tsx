@@ -10,7 +10,6 @@ const CryptoList: React.FC = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Obtém todos os tokens e filtra os destacados primeiro
   const allTokens = AssetsService.getAllTokenMetadata();
   const highlightedTokens = AssetsService.getHighlightedTokens();
   const otherTokens = allTokens.filter(token => !token.highlight);
@@ -18,38 +17,14 @@ const CryptoList: React.FC = () => {
 
   const handleAction = (action: 'buy' | 'sell' | 'swap', cryptoId: string) => {
     console.log(`${action} ${cryptoId}`);
-    // Lógica de compra/venda/troca aqui
+    // Action logic here
   };
 
-  if (isLoading) return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="text-center py-8 bg-red-500/10 rounded-xl">
-      <p className="text-red-400 font-medium">Error loading cryptocurrency data</p>
-      <button 
-        onClick={() => window.location.reload()}
-        className="mt-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
-      >
-        Try Again
-      </button>
-    </div>
-  );
-
-  // Função para calcular estatísticas do mercado Cosmos
   const calculateCosmosStats = () => {
     if (!prices) return null;
     
     const cosmosTokens = allTokens.filter(token => 
-      token.chain !== 'bitcoin' && 
-      token.chain !== 'ethereum' &&
-      token.chain !== 'solana' &&
-      token.chain !== 'binance-smart-chain' &&
-      token.chain !== 'avalanche' &&
-      token.chain !== 'polygon'
+      !['bitcoin', 'ethereum', 'solana', 'binance-smart-chain', 'avalanche', 'polygon'].includes(token.chain)
     );
 
     const cosmosPrices = cosmosTokens
@@ -66,27 +41,42 @@ const CryptoList: React.FC = () => {
 
   const cosmosStats = calculateCosmosStats();
 
+  if (isLoading) return (
+    <div className="flex justify-center items-center h-64 bg-gray-900 rounded-xl">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="text-center py-8 bg-gray-900 rounded-xl border border-gray-800">
+      <p className="text-red-400 font-medium">Error loading cryptocurrency data</p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  );
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header with stats */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Cosmos Ecosystem Market</h1>
-          <p className="text-white/70 mt-1">Interchain assets and prices</p>
+          <p className="text-gray-700 mt-2">Interchain assets and prices</p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <div className="bg-white/5 px-4 py-2 rounded-xl border border-white/10">
-            <p className="text-xs text-white/50">Cosmos Market Cap</p>
-            <p className="text-lg font-semibold text-white">
-              {cosmosStats ? 
-                `$${(cosmosStats.totalMarketCap / 1e9).toFixed(2)}B` 
-                : '-'
-              }
+        <div className="flex flex-wrap gap-4">
+          <div className="bg-gray-900 px-5 py-3 rounded-xl border border-gray-800">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">Cosmos Market Cap</p>
+            <p className="text-xl font-semibold text-white mt-1">
+              {cosmosStats ? `$${(cosmosStats.totalMarketCap / 1e9).toFixed(2)}B` : '-'}
             </p>
           </div>
-          <div className="bg-white/5 px-4 py-2 rounded-xl border border-white/10">
-            <p className="text-xs text-white/50">Avg 24h Change</p>
-            <p className={`text-lg font-semibold ${
+          <div className="bg-gray-900 px-5 py-3 rounded-xl border border-gray-800">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">Avg 24h Change</p>
+            <p className={`text-xl font-semibold mt-1 ${
               cosmosStats?.total24hChange ? 
                 cosmosStats.total24hChange >= 0 ? 'text-green-400' : 'text-red-400' 
                 : 'text-white'
@@ -94,26 +84,26 @@ const CryptoList: React.FC = () => {
               {cosmosStats ? `${cosmosStats.total24hChange.toFixed(2)}%` : '-'}
             </p>
           </div>
-          <div className="bg-white/5 px-4 py-2 rounded-xl border border-white/10">
-            <p className="text-xs text-white/50">Total Assets</p>
-            <p className="text-lg font-semibold text-white">{allTokens.length}</p>
+          <div className="bg-gray-900 px-5 py-3 rounded-xl border border-gray-800">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">Total Assets</p>
+            <p className="text-xl font-semibold text-white mt-1">{allTokens.length}</p>
           </div>
         </div>
       </div>
 
       {/* Token List */}
-      <div className="bg-gradient-to-br from-white/5 to-white/[0.01] backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
+      <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden shadow-lg">
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 p-4 bg-white/5 border-b border-white/10">
-          <div className="col-span-5 md:col-span-4 text-white/70 font-medium">Asset</div>
-          <div className="col-span-2 text-right text-white/70 font-medium">Chain</div>
-          <div className="col-span-2 text-right text-white/70 font-medium">Price</div>
-          <div className="col-span-3 text-right text-white/70 font-medium">24h Change</div>
-          <div className="col-span-2 text-right text-white/70 font-medium">Actions</div>
+        <div className="grid grid-cols-12 gap-4 p-5 bg-gray-800 border-b border-gray-700">
+          <div className="col-span-5 md:col-span-4 text-gray-400 font-medium uppercase tracking-wider text-sm">Asset</div>
+          <div className="col-span-2 text-right text-gray-400 font-medium uppercase tracking-wider text-sm">Chain</div>
+          <div className="col-span-2 text-right text-gray-400 font-medium uppercase tracking-wider text-sm">Price</div>
+          <div className="col-span-3 text-right text-gray-400 font-medium uppercase tracking-wider text-sm">24h Change</div>
+          <div className="col-span-2 text-right text-gray-400 font-medium uppercase tracking-wider text-sm">Actions</div>
         </div>
 
         {/* Token Rows */}
-        <div className="divide-y divide-white/10">
+        <div className="divide-y divide-gray-800">
           {sortedTokens.map((token) => {
             const priceData = prices?.[token.id];
             const isPositive = priceData?.usd_24h_change >= 0;
@@ -121,13 +111,13 @@ const CryptoList: React.FC = () => {
             return (
               <div 
                 key={token.id}
-                className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-white/5 transition-colors ${
-                  token.highlight ? 'bg-gradient-to-r from-amber-500/5 to-amber-500/3' : ''
+                className={`grid grid-cols-12 gap-4 p-5 items-center hover:bg-gray-850 transition-colors ${
+                  token.highlight ? 'bg-gradient-to-r from-amber-900/20 to-amber-900/10' : ''
                 }`}
               >
                 {/* Asset Info */}
-                <div className="col-span-5 md:col-span-4 flex items-center gap-3">
-                  <div className={`relative ${token.highlight ? 'ring-2 ring-amber-400' : ''} rounded-full w-10 h-10 overflow-hidden`}>
+                <div className="col-span-5 md:col-span-4 flex items-center gap-4">
+                  <div className={`relative ${token.highlight ? 'ring-2 ring-amber-500' : ''} rounded-full w-10 h-10 overflow-hidden`}>
                     <img 
                       src={token.icon} 
                       alt={token.name}
@@ -145,23 +135,23 @@ const CryptoList: React.FC = () => {
                     )}
                   </div>
                   <div>
-                    <h3 className={`font-medium ${token.highlight ? 'text-amber-300' : 'text-white'}`}>
+                    <h3 className={`font-medium ${token.highlight ? 'text-amber-400' : 'text-white'}`}>
                       {token.name}
                     </h3>
-                    <p className="text-sm text-white/60">{token.symbol}</p>
+                    <p className="text-sm text-gray-400">{token.symbol}</p>
                   </div>
                 </div>
 
                 {/* Chain */}
                 <div className="col-span-2 text-right">
-                  <p className="text-sm text-white/70">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-gray-300">
                     {token.chain.split('-')[0]}
-                  </p>
+                  </span>
                 </div>
 
                 {/* Price */}
                 <div className="col-span-2 text-right">
-                  <p className={`font-medium ${token.highlight ? 'text-amber-200' : 'text-white'}`}>
+                  <p className={`font-mono ${token.highlight ? 'text-amber-300' : 'text-white'}`}>
                     {priceData ? `$${priceData.usd.toLocaleString(undefined, { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: priceData.usd < 1 ? 6 : 2 
@@ -172,25 +162,25 @@ const CryptoList: React.FC = () => {
                 {/* 24h Change */}
                 <div className="col-span-3 text-right">
                   {priceData ? (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                       isPositive 
                         ? 'bg-green-900/30 text-green-400' 
                         : 'bg-red-900/30 text-red-400'
                     }`}
                     >
                       {isPositive ? (
-                        <svg className="-ml-0.5 mr-1 h-3 w-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="mr-1.5 h-4 w-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                         </svg>
                       ) : (
-                        <svg className="-ml-0.5 mr-1 h-3 w-3 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="mr-1.5 h-4 w-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
                       {Math.abs(priceData.usd_24h_change).toFixed(2)}%
                     </span>
                   ) : (
-                    <span className="text-gray-400">-</span>
+                    <span className="text-gray-500">-</span>
                   )}
                 </div>
 
@@ -198,20 +188,20 @@ const CryptoList: React.FC = () => {
                 <div className="col-span-2 flex justify-end gap-2">
                   <button
                     onClick={() => handleAction('buy', token.id)}
-                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       token.highlight 
-                        ? 'bg-amber-500 hover:bg-amber-600 text-white' 
-                        : 'bg-green-500 hover:bg-green-600 text-white'
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white' 
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
                     }`}
                   >
                     Buy
                   </button>
                   <button
                     onClick={() => handleAction('sell', token.id)}
-                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       token.highlight 
-                        ? 'bg-red-500 hover:bg-red-600 text-white' 
-                        : 'bg-rose-500 hover:bg-rose-600 text-white'
+                        ? 'bg-red-600 hover:bg-red-700 text-white' 
+                        : 'bg-gray-700 hover:bg-gray-600 text-white'
                     }`}
                   >
                     Sell
@@ -224,42 +214,54 @@ const CryptoList: React.FC = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 p-4 rounded-xl border border-blue-500/20">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-gray-900 p-5 rounded-xl border border-gray-800">
           <h3 className="text-blue-400 font-medium">Top Gainer (24h)</h3>
           {cosmosStats?.topGainer && (
-            <>
-              <p className="text-2xl font-bold text-white mt-2">
+            <div className="mt-4">
+              <p className="text-2xl font-bold text-white">
                 {allTokens.find(t => t.id === Object.keys(prices).find(k => prices[k] === cosmosStats.topGainer))?.symbol || '-'}
               </p>
-              <p className="text-green-400 text-sm mt-1">
-                +{cosmosStats.topGainer.usd_24h_change.toFixed(2)}%
-              </p>
-            </>
+              <div className="flex items-center mt-2">
+                <svg className="h-5 w-5 text-green-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                <p className="text-green-400 font-medium">
+                  +{cosmosStats.topGainer.usd_24h_change.toFixed(2)}%
+                </p>
+              </div>
+            </div>
           )}
         </div>
-        <div className="bg-gradient-to-r from-red-500/10 to-red-600/10 p-4 rounded-xl border border-red-500/20">
+        <div className="bg-gray-900 p-5 rounded-xl border border-gray-800">
           <h3 className="text-red-400 font-medium">Top Loser (24h)</h3>
           {cosmosStats?.topLoser && (
-            <>
-              <p className="text-2xl font-bold text-white mt-2">
+            <div className="mt-4">
+              <p className="text-2xl font-bold text-white">
                 {allTokens.find(t => t.id === Object.keys(prices).find(k => prices[k] === cosmosStats.topLoser))?.symbol || '-'}
               </p>
-              <p className="text-red-400 text-sm mt-1">
-                {cosmosStats.topLoser.usd_24h_change.toFixed(2)}%
-              </p>
-            </>
+              <div className="flex items-center mt-2">
+                <svg className="h-5 w-5 text-red-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <p className="text-red-400 font-medium">
+                  {cosmosStats.topLoser.usd_24h_change.toFixed(2)}%
+                </p>
+              </div>
+            </div>
           )}
         </div>
-        <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/10 p-4 rounded-xl border border-purple-500/20">
+        <div className="bg-gray-900 p-5 rounded-xl border border-gray-800">
           <h3 className="text-purple-400 font-medium">Most Active</h3>
           {prices && (
-            <>
-              <p className="text-2xl font-bold text-white mt-2">ATOM</p>
-              <p className="text-amber-400 text-sm mt-1">
+            <div className="mt-4">
+              <p className="text-2xl font-bold text-white">ATOM</p>
+              <p className={`text-lg font-medium mt-2 ${
+                cosmosStats?.total24hChange >= 0 ? 'text-green-400' : 'text-red-400'
+              }`}>
                 {cosmosStats?.total24hChange.toFixed(2)}%
               </p>
-            </>
+            </div>
           )}
         </div>
       </div>

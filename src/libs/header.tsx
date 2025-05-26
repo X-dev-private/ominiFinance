@@ -11,6 +11,7 @@ export default function Header() {
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [isDeFiOpen, setIsDeFiOpen] = useState(false);
   const [isTokensOpen, setIsTokensOpen] = useState(false);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isConnected) {
@@ -35,6 +36,26 @@ export default function Header() {
   const toggleTokensMenu = () => {
     setIsTokensOpen(!isTokensOpen);
     setIsDeFiOpen(false);
+  };
+
+  const handleMouseEnterMenu = (menu: 'defi' | 'tokens') => {
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+    if (menu === 'defi') {
+      setIsDeFiOpen(true);
+    } else {
+      setIsTokensOpen(true);
+    }
+  };
+
+  const handleMouseLeaveMenu = (menu: 'defi' | 'tokens') => {
+    const timeout = setTimeout(() => {
+      if (menu === 'defi') {
+        setIsDeFiOpen(false);
+      } else {
+        setIsTokensOpen(false);
+      }
+    }, 500);
+    setHoverTimeout(timeout);
   };
 
   return (
@@ -78,8 +99,8 @@ export default function Header() {
           <div className="relative group">
             <button
               onClick={toggleDeFiMenu}
-              onMouseEnter={() => setIsDeFiOpen(true)}
-              onMouseLeave={() => setTimeout(() => setIsDeFiOpen(false), 200)}
+              onMouseEnter={() => handleMouseEnterMenu('defi')}
+              onMouseLeave={() => handleMouseLeaveMenu('defi')}
               className="px-4 py-2 text-gray-300 hover:text-emerald-400 transition-colors font-medium rounded-lg hover:bg-gray-800/50 flex items-center"
             >
               DeFi
@@ -95,8 +116,8 @@ export default function Header() {
             {isDeFiOpen && (
               <div
                 className="absolute left-0 mt-2 w-48 bg-gray-800/95 backdrop-blur-lg rounded-xl shadow-lg border border-gray-700 py-1 z-10"
-                onMouseEnter={() => setIsDeFiOpen(true)}
-                onMouseLeave={() => setTimeout(() => setIsDeFiOpen(false), 200)}
+                onMouseEnter={() => handleMouseEnterMenu('defi')}
+                onMouseLeave={() => handleMouseLeaveMenu('defi')}
               >
                 {['Swap', 'Liquidity'].map((item) => (
                   <a
@@ -115,8 +136,8 @@ export default function Header() {
           <div className="relative group">
             <button
               onClick={toggleTokensMenu}
-              onMouseEnter={() => setIsTokensOpen(true)}
-              onMouseLeave={() => setTimeout(() => setIsTokensOpen(false), 200)}
+              onMouseEnter={() => handleMouseEnterMenu('tokens')}
+              onMouseLeave={() => handleMouseLeaveMenu('tokens')}
               className="px-4 py-2 text-gray-300 hover:text-emerald-400 transition-colors font-medium rounded-lg hover:bg-gray-800/50 flex items-center"
             >
               Tokens
@@ -132,8 +153,8 @@ export default function Header() {
             {isTokensOpen && (
               <div
                 className="absolute left-0 mt-2 w-48 bg-gray-800/95 backdrop-blur-lg rounded-xl shadow-lg border border-gray-700 py-1 z-10"
-                onMouseEnter={() => setIsTokensOpen(true)}
-                onMouseLeave={() => setTimeout(() => setIsTokensOpen(false), 200)}
+                onMouseEnter={() => handleMouseEnterMenu('tokens')}
+                onMouseLeave={() => handleMouseLeaveMenu('tokens')}
               >
                 {['Create Token', 'My Tokens'].map((item) => (
                   <a
@@ -165,12 +186,18 @@ export default function Header() {
         {/* Wallet Connection */}
         <div className="flex items-center space-x-4">
           {selectedChain && (
-            <div className="hidden sm:flex items-center space-x-2 bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-700">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="hidden sm:flex items-center space-x-2 bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-700 hover:bg-gray-700 transition-colors cursor-pointer"
+            >
               <div className={`h-2 w-2 rounded-full ${selectedChain === 'EVM' ? 'bg-blue-400' : 'bg-purple-400'}`}></div>
               <span className="text-xs font-medium text-gray-300">
                 {selectedChain === 'EVM' ? 'EVM Chain' : 'Cosmos Chain'}
               </span>
-            </div>
+              <svg className="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           )}
           
           {selectedChain === 'EVM' && <appkit-button />}
@@ -186,9 +213,9 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Network Selection Modal */}
+      {/* Network Selection Modal - Reposicionado mais para baixo */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4">
+        <div className="fixed inset-0 flex items-start justify-center pt-32 bg-black/70 backdrop-blur-sm z-50 p-4">
           <div className="bg-gray-800/95 border border-gray-700 rounded-xl shadow-2xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-white">Select Network</h3>
