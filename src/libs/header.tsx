@@ -37,148 +37,215 @@ export default function Header() {
     setIsDeFiOpen(false);
   };
 
-  // Estilo base para todos os botões
-  const buttonStyle = "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg";
-
   return (
-    <div className="flex flex-row items-center justify-between w-full h-20 bg-opacity-50 px-6 py-8 rounded-2xl">
-      <div className="w-1/5 text-left">
-        <img src={Logo} alt="Logo" className="h-16 object-contain" />
-      </div>
+    <header className="w-full bg-gray-900/80 backdrop-blur-lg border-b border-emerald-500/20 px-6 py-4 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center">
+          <img src={Logo} alt="Logo" className="h-10 mr-2" />
+          <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+            OminiFinance
+          </span>
+        </div>
 
-      <div className="w-3/5 flex gap-4 items-center justify-center">
-        {/* Botão Dashboard */}
-        <a
-          href="/app/dashboard"
-          className={buttonStyle}
-        >
-          Dashboard
-        </a>
-
-        {/* Botão Add Funds */}
-        <a
-          href="/app/ramp"
-          className={buttonStyle}
-        >
-          Add Funds
-        </a>
-
-        {/* Botão Portfolio */}
-        <a
-          href="/app/portfolio"
-          className={buttonStyle}
-        >
-          Portfolio
-        </a>
-
-        {/* Menu Suspenso para DeFi */}
-        <div className="relative group">
-          <button
-            onClick={toggleDeFiMenu}
-            onMouseEnter={() => setIsDeFiOpen(true)}
-            onMouseLeave={() => !isDeFiOpen && setIsDeFiOpen(false)}
-            className={buttonStyle}
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center space-x-2">
+          {/* Dashboard */}
+          <a
+            href="/app/dashboard"
+            className="px-4 py-2 text-gray-300 hover:text-emerald-400 transition-colors font-medium rounded-lg hover:bg-gray-800/50"
           >
-            DeFi
-          </button>
-          {isDeFiOpen && (
-            <div
-              className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20"
+            Dashboard
+          </a>
+
+          {/* Add Funds */}
+          <a
+            href="/app/ramp"
+            className="px-4 py-2 text-gray-300 hover:text-emerald-400 transition-colors font-medium rounded-lg hover:bg-gray-800/50"
+          >
+            Add Funds
+          </a>
+
+          {/* Portfolio */}
+          <a
+            href="/app/portfolio"
+            className="px-4 py-2 text-gray-300 hover:text-emerald-400 transition-colors font-medium rounded-lg hover:bg-gray-800/50"
+          >
+            Portfolio
+          </a>
+
+          {/* DeFi Dropdown */}
+          <div className="relative group">
+            <button
+              onClick={toggleDeFiMenu}
               onMouseEnter={() => setIsDeFiOpen(true)}
-              onMouseLeave={() => setIsDeFiOpen(false)}
+              onMouseLeave={() => setTimeout(() => setIsDeFiOpen(false), 200)}
+              className="px-4 py-2 text-gray-300 hover:text-emerald-400 transition-colors font-medium rounded-lg hover:bg-gray-800/50 flex items-center"
             >
-              {['Swap', 'Liquidity'].map((item, index) => (
-                <a
-                  key={index}
-                  href={`/app/${item.toLowerCase()}`}
-                  className="block px-6 py-3 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-300"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Menu Suspenso para Tokens */}
-        <div className="relative group">
-          <button
-            onClick={toggleTokensMenu}
-            onMouseEnter={() => setIsTokensOpen(true)}
-            onMouseLeave={() => !isTokensOpen && setIsTokensOpen(false)}
-            className={buttonStyle}
-          >
-            Tokens
-          </button>
-          {isTokensOpen && (
-            <div
-              className="absolute top-full mt-2 left-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20"
-              onMouseEnter={() => setIsTokensOpen(true)}
-              onMouseLeave={() => setIsTokensOpen(false)}
-            >
-              {['Create Token', 'My Tokens'].map((item, index) => (
-                <a
-                  key={index}
-                  href={`/app/${item.toLowerCase().replace(' ', '-')}`}
-                  className="block px-6 py-3 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-300"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Botão Point & Rewards (Desabilitado) */}
-        <div className="relative flex flex-col items-center group">
-          <button
-            disabled
-            className={`${buttonStyle} opacity-50 cursor-not-allowed`}
-          >
-            Point & Rewards
-          </button>
-          <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-green-600 text-xs font-semibold px-3 py-1 rounded-md shadow-md border border-green-500">
-            Coming Soon
-            <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-b-8 border-green-500"></div>
+              DeFi
+              <svg
+                className={`ml-1 h-4 w-4 transition-transform ${isDeFiOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {isDeFiOpen && (
+              <div
+                className="absolute left-0 mt-2 w-48 bg-gray-800/95 backdrop-blur-lg rounded-xl shadow-lg border border-gray-700 py-1 z-10"
+                onMouseEnter={() => setIsDeFiOpen(true)}
+                onMouseLeave={() => setTimeout(() => setIsDeFiOpen(false), 200)}
+              >
+                {['Swap', 'Liquidity'].map((item) => (
+                  <a
+                    key={item}
+                    href={`/app/${item.toLowerCase()}`}
+                    className="block px-4 py-2 text-sm text-gray-300 hover:text-emerald-400 hover:bg-gray-700/50 transition-colors"
+                  >
+                    {item}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Tokens Dropdown */}
+          <div className="relative group">
+            <button
+              onClick={toggleTokensMenu}
+              onMouseEnter={() => setIsTokensOpen(true)}
+              onMouseLeave={() => setTimeout(() => setIsTokensOpen(false), 200)}
+              className="px-4 py-2 text-gray-300 hover:text-emerald-400 transition-colors font-medium rounded-lg hover:bg-gray-800/50 flex items-center"
+            >
+              Tokens
+              <svg
+                className={`ml-1 h-4 w-4 transition-transform ${isTokensOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {isTokensOpen && (
+              <div
+                className="absolute left-0 mt-2 w-48 bg-gray-800/95 backdrop-blur-lg rounded-xl shadow-lg border border-gray-700 py-1 z-10"
+                onMouseEnter={() => setIsTokensOpen(true)}
+                onMouseLeave={() => setTimeout(() => setIsTokensOpen(false), 200)}
+              >
+                {['Create Token', 'My Tokens'].map((item) => (
+                  <a
+                    key={item}
+                    href={`/app/${item.toLowerCase().replace(' ', '-')}`}
+                    className="block px-4 py-2 text-sm text-gray-300 hover:text-emerald-400 hover:bg-gray-700/50 transition-colors"
+                  >
+                    {item}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Coming Soon Badge */}
+          <div className="relative group">
+            <button
+              disabled
+              className="px-4 py-2 text-gray-500 font-medium rounded-lg flex items-center cursor-not-allowed"
+            >
+              Point & Rewards
+              <span className="ml-1 text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
+                SOON
+              </span>
+            </button>
+          </div>
+        </nav>
+
+        {/* Wallet Connection */}
+        <div className="flex items-center space-x-4">
+          {selectedChain && (
+            <div className="hidden sm:flex items-center space-x-2 bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-700">
+              <div className={`h-2 w-2 rounded-full ${selectedChain === 'EVM' ? 'bg-blue-400' : 'bg-purple-400'}`}></div>
+              <span className="text-xs font-medium text-gray-300">
+                {selectedChain === 'EVM' ? 'EVM Chain' : 'Cosmos Chain'}
+              </span>
+            </div>
+          )}
+          
+          {selectedChain === 'EVM' && <appkit-button />}
+          {selectedChain === 'COSMOS' && <WalletConnector />}
+          {!selectedChain && (
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20"
+            >
+              Connect Wallet
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="w-1/5 flex justify-end items-center">
-        {selectedChain === 'EVM' && <appkit-button />}
-        {selectedChain === 'COSMOS' && <WalletConnector />}
-        {!selectedChain && (
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className={buttonStyle}
-          >
-            Connect Wallet
-          </button>
-        )}
-      </div>
-
-      {/* Modal de Seleção de Rede */}
+      {/* Network Selection Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 backdrop-blur-sm">
-          <div className="bg-white/90 p-8 rounded-2xl shadow-xl border border-white/20">
-            <h3 className="text-2xl font-bold mb-6 text-gray-800 text-center">Choose Network</h3>
-            <div className="flex flex-col gap-4">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4">
+          <div className="bg-gray-800/95 border border-gray-700 rounded-xl shadow-2xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white">Select Network</h3>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-3">
               <button
                 onClick={() => handleChainSelection('EVM')}
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                className="w-full flex items-center justify-between p-4 bg-gray-700/50 hover:bg-gray-700 rounded-lg border border-gray-600 transition-colors group"
               >
-                EVM
+                <div className="flex items-center">
+                  <div className="bg-blue-500/20 p-2 rounded-lg mr-3">
+                    <svg className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium">EVM Chains</h4>
+                    <p className="text-xs text-gray-400">Ethereum, Polygon, BSC, etc.</p>
+                  </div>
+                </div>
+                <svg className="h-5 w-5 text-gray-400 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
+              
               <button
                 onClick={() => handleChainSelection('COSMOS')}
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full hover:from-purple-700 hover:to-purple-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                className="w-full flex items-center justify-between p-4 bg-gray-700/50 hover:bg-gray-700 rounded-lg border border-gray-600 transition-colors group"
               >
-                COSMOS
+                <div className="flex items-center">
+                  <div className="bg-purple-500/20 p-2 rounded-lg mr-3">
+                    <svg className="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium">Cosmos Chains</h4>
+                    <p className="text-xs text-gray-400">Sei, Osmosis, Juno, etc.</p>
+                  </div>
+                </div>
+                <svg className="h-5 w-5 text-gray-400 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </header>
   );
 }

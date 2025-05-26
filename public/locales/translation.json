@@ -1,61 +1,101 @@
 {
-    "header": {
-      "home": "Início",
-      "docs": "Documentos",
-      "roadmap": "Roteiro",
-      "launchTestnet": "Lançar Testnet"
+  "header": {
+    "home": "Início",
+    "docs": "Documentos",
+    "roadmap": "Roteiro",
+    "launchTestnet": "Lançar Testnet"
+  },
+  "hero": {
+    "title": "OminiFinance",
+    "subtitle": "Plataforma Cross-Chain DeFi",
+    "description": "A solução definitiva de interoperabilidade construída sobre o Cosmos, conectando todos os principais ecossistemas blockchain através da tecnologia avançada IBC.",
+    "launchApp": "Lançar App",
+    "documentation": "Documentação"
+  },
+  "deFiExplanation": {
+    "title": "O que é DeFi?",
+    "content": "DeFi (Finanças Descentralizadas) permite que você gerencie seu dinheiro sem bancos, usando tecnologia blockchain para empréstimos, investimentos e transferências seguras."
+  },
+  "howItWorks": {
+    "title": "Como funciona em 3 passos simples",
+    "subtitle": "Comece a usar nossa plataforma mesmo sem experiência prévia em criptomoedas",
+    "step1": "Conecte sua carteira",
+    "step1Desc": "Use uma carteira digital como Metamask para acessar a plataforma de forma segura",
+    "step2": "Escolha seu serviço",
+    "step2Desc": "Selecione entre empréstimos, investimentos ou trocas de criptomoedas",
+    "step3": "Acompanhe seus ganhos",
+    "step3Desc": "Visualize em tempo real o rendimento dos seus investimentos"
+  },
+  "benefits": {
+    "forBeginners": "Para iniciantes",
+    "title": "Por que escolher nossa plataforma?",
+    "subtitle": "Criada para tornar as finanças descentralizadas acessíveis a todos",
+    "security": {
+      "title": "Segurança em primeiro lugar",
+      "content": "Tecnologia blockchain avançada para proteger seus ativos com transparência total"
     },
-    "hero": {
-      "title": "OminiFinance",
-      "subtitle": "Plataforma Cross-Chain DeFi",
-      "description": "A solução definitiva de interoperabilidade construída sobre o Cosmos, conectando todos os principais ecossistemas blockchain através da tecnologia avançada IBC.",
-      "launchApp": "Lançar App",
-      "documentation": "Documentação"
+    "interface": {
+      "title": "Interface intuitiva",
+      "content": "Design simplificado para você navegar sem complicações, mesmo sendo iniciante"
     },
-    "about": {
-      "title": "Finanças Unificadas Multi-Chain",
-      "description": "OminiFinance revoluciona o DeFi criando conexões contínuas entre ecossistemas blockchain isolados."
-    },
-    "crossChainSwaps": "Trocas Cross-Chain",
-    "crossChainSwapsDescription": "Troque ativos entre diferentes blockchains sem precisar de embalagens ou intermediários.",
-    "yieldAggregation": "Agregação de Yield",
-    "yieldAggregationDescription": "Acesse os melhores rendimentos em várias cadeias de uma única interface.",
-    "ibcNative": "IBC Nativo",
-    "ibcNativeDescription": "Construído sobre o Cosmos SDK com suporte nativo para Comunicação Inter-Blockchain.",
-    "cosmosPower": "MOVIMENTADO POR COSMOS",
-    "cosmosTitle": "A Mais Avançada Interoperabilidade Blockchain",
-    "cosmosDescription": "OminiFinance aproveita o Cosmos SDK e o consenso Tendermint para fornecer desempenho de nível empresarial e capacidades cross-chain incomparáveis.",
-    "cosmosFeature1": "Finalidade instantânea das transações com Tendermint BFT",
-    "cosmosFeature2": "Protocolo IBC nativo para comunicação fluida entre cadeias",
-    "cosmosFeature3": "Arquitetura modular para facilidades de upgrades e customizações",
-    "cosmosWhyTitle": "Por que Cosmos?",
-    "cosmosWhyDescription": "O Cosmos é a Internet dos Blockchains - um ecossistema de cadeias interconectadas e soberanas que podem trocar valor e dados através do IBC.",
-    "cosmosForDevelopersTitle": "Para Desenvolvedores",
-    "cosmosForDevelopers": "O Cosmos SDK fornece a estrutura mais flexível para construir blockchains específicos para aplicações.",
-    "cosmosForUsersTitle": "Para Usuários",
-    "cosmosForUsers": "Experimente verdadeira interoperabilidade sem ativos embalados ou pontes centralizadas.",
-    "cosmosForEcosystemTitle": "Para o Ecossistema",
-    "cosmosForEcosystem": "Modelo de segurança compartilhada e rede crescente de cadeias interconectadas.",
-    "connectedEcosystem": "Ecossistema Conectado",
-    "connectedEcosystemDescription": "Suporte nativo para 50+ cadeias habilitadas para IBC e pontes seguras para redes principais.",
-    "ctaTitle": "Pronto para experimentar o Cross-Chain DeFi?",
-    "ctaDescription": "Junte-se a milhares de usuários gerenciando ativos em várias blockchains com OminiFinance.",
-    "launchAppNow": "Lançar App Agora",
-    "footer": {
-      "about": "A plataforma cross-chain DeFi definitiva construída sobre o Cosmos.",
-      "product": "Produto",
-      "resources": "Recursos",
-      "company": "Empresa",
-      "app": "App",
-      "roadmap": "Roteiro",
-      "features": "Características",
-      "documentation": "Documentação",
-      "github": "GitHub",
-      "whitepaper": "Whitepaper",
-      "aboutText": "Sobre",
-      "blog": "Blog",
-      "contact": "Contato",
-      "allRightsReserved": "© 2025 OminiFinance. Todos os direitos reservados."
+    "support": {
+      "title": "Suporte 24/7",
+      "content": "Equipe dedicada para tirar suas dúvidas e guiá-lo em sua jornada DeFi"
     }
-  }
-  
+  },
+  "comparison": {
+    "title": "Bancos tradicionais vs. DeFi",
+    "subtitle": "Entenda as diferenças de forma clara e objetiva",
+    "traditional": {
+      "title": "Bancos Tradicionais",
+      "point1": "Horários limitados",
+      "point2": "Taxas ocultas",
+      "point3": "Necessidade de intermediários"
+    },
+    "defi": {
+      "title": "DeFi com OminiFinance",
+      "point1": "Acesso 24/7 de qualquer lugar",
+      "point2": "Taxas transparentes e menores",
+      "point3": "Controle total sobre seus ativos"
+    }
+  },
+  "cta": {
+    "title": "Pronto para começar?",
+    "subtitle": "Cadastre-se em minutos e descubra um novo mundo de possibilidades financeiras",
+    "primary": "Comece agora - é grátis",
+    "secondary": "Ver demonstração"
+  },
+  "faq": {
+    "title": "Perguntas frequentes",
+    "subtitle": "Tire suas dúvidas sobre DeFi e nossa plataforma",
+    "q1": "O que preciso para começar?",
+    "a1": "Você só precisa de uma carteira digital como Metamask e uma pequena quantidade de criptomoeda para pagar as taxas de transação.",
+    "q2": "É seguro usar DeFi?",
+    "a2": "Sim, quando usado corretamente. Nossa plataforma utiliza contratos inteligentes auditados e sempre recomendamos práticas seguras como guardar suas chaves privadas em local seguro.",
+    "q3": "Quanto dinheiro preciso para começar?",
+    "a3": "Você pode começar com qualquer valor, mesmo pequeno. Diferente dos bancos tradicionais, não há valor mínimo para investir."
+  },
+  "footer": {
+    "tagline": "Tornando as finanças descentralizadas acessíveis a todos",
+    "product": {
+      "title": "Produto",
+      "app": "Aplicativo",
+      "roadmap": "Roadmap",
+      "features": "Funcionalidades"
+    },
+    "resources": {
+      "title": "Recursos",
+      "docs": "Documentação",
+      "learn": "Aprenda DeFi",
+      "tutorials": "Tutoriais"
+    },
+    "support": {
+      "title": "Suporte",
+      "faq": "FAQ",
+      "contact": "Contato",
+      "community": "Comunidade"
+    },
+    "copyright": "© {{year}} OminiFinance. Todos os direitos reservados."
+  },
+  "learnAboutDeFi": "Aprenda sobre DeFi"
+}
