@@ -87,14 +87,6 @@ export default function Header() {
             Add Funds
           </a>
 
-          {/* Portfolio */}
-          <a
-            href="/app/portfolio"
-            className="px-4 py-2 text-gray-300 hover:text-emerald-400 transition-colors font-medium rounded-lg hover:bg-gray-800/50"
-          >
-            Portfolio
-          </a>
-
           {/* DeFi Dropdown */}
           <div className="relative group">
             <button
@@ -119,7 +111,7 @@ export default function Header() {
                 onMouseEnter={() => handleMouseEnterMenu('defi')}
                 onMouseLeave={() => handleMouseLeaveMenu('defi')}
               >
-                {['Swap', 'Liquidity'].map((item) => (
+                {['Swap', 'Stake'].map((item) => (
                   <a
                     key={item}
                     href={`/app/${item.toLowerCase()}`}
@@ -132,7 +124,7 @@ export default function Header() {
             )}
           </div>
 
-          {/* Tokens Dropdown */}
+          {/* Tokens Dropdown 
           <div className="relative group">
             <button
               onClick={toggleTokensMenu}
@@ -167,7 +159,7 @@ export default function Header() {
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Coming Soon Badge */}
           <div className="relative group">

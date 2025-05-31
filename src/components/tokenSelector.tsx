@@ -6,14 +6,12 @@ interface TokenSelectorProps {
   tokens: TokenInfo[];
   selectedToken: string;
   onSelect: (tokenSymbol: string) => void;
-  isCosmosActive: boolean;
 }
 
 const TokenSelector: React.FC<TokenSelectorProps> = ({
   tokens,
   selectedToken,
-  onSelect,
-  isCosmosActive
+  onSelect
 }) => {
   const selectedTokenData = tokens.find(t => t.symbol === selectedToken);
 
