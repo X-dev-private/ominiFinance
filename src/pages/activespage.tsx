@@ -48,9 +48,13 @@ const Actives: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeChain, setActiveChain] = useState<string>("cosmoshub-4");
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
 
-  const fetchHistoricalData = async () => {
-    if (!window.keplr) return;
+  const connectWallet = async () => {
+    if (!window.keplr) {
+      alert("Por favor instale a extensão Keplr");
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -58,6 +62,21 @@ const Actives: React.FC = () => {
       if (!chainInfo) throw new Error("Chain não suportada");
       
       await window.keplr.enable(activeChain);
+      setIsWalletConnected(true);
+      await fetchHistoricalData();
+    } catch (error) {
+      console.error("Erro ao conectar carteira:", error);
+      setIsWalletConnected(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchHistoricalData = async () => {
+    if (!window.keplr || !isWalletConnected) return;
+
+    setIsLoading(true);
+    try {
       const offlineSigner = window.keplr.getOfflineSigner(activeChain);
       const accounts = await offlineSigner.getAccounts();
       const userAddress = accounts[0].address;
@@ -94,10 +113,10 @@ const Actives: React.FC = () => {
   };
 
   useEffect(() => {
-    if (window.keplr) {
+    if (isWalletConnected) {
       fetchHistoricalData();
     }
-  }, [activeChain, timeRange]);
+  }, [activeChain, timeRange, isWalletConnected]);
 
   const chartData = {
     labels: historicalData.map(item => item.date),
@@ -137,6 +156,7 @@ const Actives: React.FC = () => {
                   value={activeChain}
                   onChange={(e) => setActiveChain(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-5 py-3.5 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base appearance-none"
+                  disabled={!isWalletConnected}
                 >
                   {SUPPORTED_CHAINS.map((chain) => (
                     <option key={chain.id} value={chain.id} className="bg-gray-800">
@@ -160,6 +180,7 @@ const Actives: React.FC = () => {
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                       }`}
+                      disabled={!isWalletConnected}
                     >
                       {range}
                     </button>
@@ -167,29 +188,57 @@ const Actives: React.FC = () => {
                 </div>
               </div>
               
-              <button
-                onClick={fetchHistoricalData}
-                disabled={isLoading}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-8 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg disabled:opacity-50 self-end md:self-auto flex items-center justify-center min-w-[180px]"
-              >
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Atualizando...
-                  </>
-                ) : (
-                  'Atualizar Dados'
-                )}
-              </button>
+              {!isWalletConnected ? (
+                <button
+                  onClick={connectWallet}
+                  disabled={isLoading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-8 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg disabled:opacity-50 self-end md:self-auto flex items-center justify-center min-w-[180px]"
+                >
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Conectando...
+                    </>
+                  ) : (
+                    'Conectar Carteira'
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={fetchHistoricalData}
+                  disabled={isLoading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-8 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg disabled:opacity-50 self-end md:self-auto flex items-center justify-center min-w-[180px]"
+                >
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Atualizando...
+                    </>
+                  ) : (
+                    'Atualizar Dados'
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
           {/* Gráfico */}
           <div className="bg-gray-900 rounded-2xl p-6 mb-8 border border-gray-800 shadow-xl">
-            {isLoading ? (
+            {!isWalletConnected ? (
+              <div className="text-center py-16">
+                <svg className="mx-auto h-16 w-16 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 className="mt-4 text-xl font-medium text-gray-300">Conecte sua carteira</h3>
+                <p className="mt-2 text-gray-500">Clique no botão "Conectar Carteira" para visualizar seu histórico</p>
+              </div>
+            ) : isLoading ? (
               <div className="h-96 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
               </div>
@@ -248,11 +297,11 @@ const Actives: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <h3 className="mt-4 text-xl font-medium text-gray-300">Nenhum dado histórico disponível</h3>
-                <p className="mt-2 text-gray-500">Conecte sua carteira para visualizar o histórico</p>
+                <p className="mt-2 text-gray-500">Não foi possível carregar os dados da sua carteira</p>
               </div>
             )}
           </div>
-            <UserCryptoBalance />
+          {isWalletConnected && <UserCryptoBalance />}
         </div>
       </div>
 

@@ -28,7 +28,7 @@ class OsmosisClient {
     outputDenom: string;
     amount: string;
     slippage: string;
-    gasPrice: { amount: any; denom: string };
+    gasPrice: { amount: Decimal; denom: string };
   }) {
     const client = await SigningStargateClient.connectWithSigner(
       this.endpoints.rpcEndpoint,
@@ -74,12 +74,12 @@ export const useOsmosisSwap = () => {
     restEndpoint: 'https://lcd.osmosis.zone'
   });
 
-  // Fetch token prices using Osmosis API - Sintaxe corrigida para React Query v5
-  const { data: prices, error: priceError } = useQuery({ 
-    queryKey: ['osmosisPrices'], 
-    queryFn: async () => {
-      const prices = await osmosisClient.getTokenPrices();
-      return prices.reduce((acc: Record<string, number>, token: any) => {
+  // Fetch token prices using Osmosis API - Corrigido para React Query v5
+  const { data: prices, error: priceError, isError } = useQuery({
+    queryKey: ['osmosisPrices'],
+    queryFn: () => osmosisClient.getTokenPrices(),
+    select: (data) => {
+      return data.reduce((acc: Record<string, number>, token: any) => {
         if (token.symbol && token.price) acc[token.symbol] = token.price;
         if (token.denom && token.price) acc[token.denom] = token.price;
         return acc;
@@ -102,7 +102,7 @@ export const useOsmosisSwap = () => {
   // Fetch swap data when inputs change
   useEffect(() => {
     const fetchSwapData = async () => {
-      if (!fromToken || !toToken) return;
+      if (!fromToken || !toToken || !fromAmount) return;
 
       try {
         const route = await osmosisClient.getBestRoute({
@@ -125,7 +125,11 @@ export const useOsmosisSwap = () => {
       }
     };
 
-    fetchSwapData();
+    const debounceTimer = setTimeout(() => {
+      fetchSwapData();
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
   }, [fromToken, toToken, fromAmount, slippage, prices]);
 
   // Execute swap
@@ -175,8 +179,10 @@ export const useOsmosisSwap = () => {
     swapRate,
     showChainWarning,
     prices,
-    priceError,
+    priceError: isError,
     minimumReceived,
+    fromUsdValue,
+    slippage,
     setFromToken,
     setToToken,
     setFromAmount,
