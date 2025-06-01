@@ -1,12 +1,11 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getCryptoPrices } from '../services/cryptoService';
 import { AssetsService, TokenInfo } from '../services/assetsService';
 
 const CryptoList: React.FC = () => {
   const { data: prices, isLoading, error } = useQuery({
     queryKey: ['cryptoPrices'],
-    queryFn: getCryptoPrices,
+    queryFn: () => AssetsService.updatePrices(), // Usa o novo método de atualização
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
@@ -23,13 +22,12 @@ const CryptoList: React.FC = () => {
   const calculateCosmosStats = () => {
     if (!prices) return null;
     
-    const cosmosTokens = allTokens.filter(token => 
-      !['bitcoin', 'ethereum', 'solana', 'binance-smart-chain', 'avalanche', 'polygon'].includes(token.chain)
-    );
-
+    const cosmosTokens = allTokens;
     const cosmosPrices = cosmosTokens
       .map(token => prices[token.id])
       .filter(Boolean);
+
+    if (cosmosPrices.length === 0) return null;
 
     return {
       totalMarketCap: cosmosPrices.reduce((sum, price) => sum + price.usd, 0),
@@ -220,7 +218,7 @@ const CryptoList: React.FC = () => {
           {cosmosStats?.topGainer && (
             <div className="mt-4">
               <p className="text-2xl font-bold text-white">
-                {allTokens.find(t => t.id === Object.keys(prices).find(k => prices[k] === cosmosStats.topGainer))?.symbol || '-'}
+                {allTokens.find(t => prices?.[t.id] === cosmosStats.topGainer)?.symbol || '-'}
               </p>
               <div className="flex items-center mt-2">
                 <svg className="h-5 w-5 text-green-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -238,7 +236,7 @@ const CryptoList: React.FC = () => {
           {cosmosStats?.topLoser && (
             <div className="mt-4">
               <p className="text-2xl font-bold text-white">
-                {allTokens.find(t => t.id === Object.keys(prices).find(k => prices[k] === cosmosStats.topLoser))?.symbol || '-'}
+                {allTokens.find(t => prices?.[t.id] === cosmosStats.topLoser)?.symbol || '-'}
               </p>
               <div className="flex items-center mt-2">
                 <svg className="h-5 w-5 text-red-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -255,7 +253,7 @@ const CryptoList: React.FC = () => {
           <h3 className="text-purple-400 font-medium">Most Active</h3>
           {prices && (
             <div className="mt-4">
-              <p className="text-2xl font-bold text-white">ATOM</p>
+              <p className="text-2xl font-bold text-white">OSMO</p>
               <p className={`text-lg font-medium mt-2 ${
                 cosmosStats?.total24hChange >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>

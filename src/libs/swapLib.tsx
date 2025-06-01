@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react'; // Adicionei o useState aqui
 import { useOsmosisSwap } from '../utils/useOsmosisSwap';
 import HeaderSection from '../components/swap/HeaderSection';
 import SwapArrow from '../components/swap/SwapArrow';
@@ -31,7 +31,10 @@ const TokenSwap = () => {
     handleFromAmountChange
   } = useOsmosisSwap();
 
-  // Gambiarra: Força ATOM e OSMO como tokens padrão
+  // Estado para controle do valor USD
+  const [fromUsdAmount, setFromUsdAmount] = useState<string>('0');
+
+  // Configura tokens padrão (ATOM e OSMO)
   useEffect(() => {
     if (tokens.length > 0) {
       const atomToken = tokens.find(t => t.id === ATOM_ID);
@@ -44,7 +47,7 @@ const TokenSwap = () => {
     }
   }, [tokens, setFromToken, setToToken]);
 
-  // Gambiarra: Força pool 1 para ATOM/OSMO
+  // Execução do swap com fallback para pool 1 de ATOM/OSMO
   const hackedExecuteSwap = async () => {
     if (!fromToken || !toToken) return;
     
@@ -122,10 +125,13 @@ const TokenSwap = () => {
             tokens={tokens}
             onTokenChange={setFromToken}
             amount={fromAmount}
+            usdAmount={fromUsdAmount}
             onAmountChange={handleFromAmountChange}
+            onUsdAmountChange={setFromUsdAmount}
             onUsdValueChange={setFromUsdValue}
             isFromInput={true}
             readOnly={false}
+            allowTokenChange={true}
             price={fromToken?.symbol ? prices?.[fromToken.symbol] : undefined}
           />
           
@@ -138,8 +144,10 @@ const TokenSwap = () => {
             tokens={tokens}
             onTokenChange={setToToken}
             amount={toAmount}
-            onAmountChange={undefined}
+            fixedUsdValue={fromUsdAmount}
             readOnly={true}
+            allowTokenChange={true}
+            isFromInput={false}
             price={toToken?.symbol ? prices?.[toToken.symbol] : undefined}
           />
         </div>
